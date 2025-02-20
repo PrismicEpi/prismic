@@ -1,0 +1,24 @@
+version: "3"
+
+tasks:
+# TODO : Importer les secrets depuis infisical
+    compose_down:
+        cmds:
+            - |
+                sudo docker compose -f docker/compose.yaml down -v
+
+    compose_up:
+        cmds:
+            - |
+                sudo docker compose -f docker/compose.yaml up --build -d
+
+    compose_log:
+        cmds:
+            - |
+                sudo docker compose -f docker/compose.yaml logs -f
+
+    run:
+        cmds:
+            - task: compose_down
+            - task: compose_up
+            - task: compose_log

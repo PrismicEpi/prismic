@@ -1,0 +1,125 @@
+# TODO : Faire les depends on, les healthcheck, uptime kuma/discord notification, backup duplicati, secrets infisical, better gestion dans Taskfile 2 option quel service redémarrer, et les logs
+name: prismic-back
+
+services:
+    prismic-back:
+        container_name: prismic-back
+        build:
+            context: ../
+            dockerfile: ./docker/Dockerfile
+        env_file: .env
+        # TODO : Voir à quoi peut servir node_env pour le code abstrait
+        # environment:
+        #   - NODE_ENV=dev
+        volumes:
+            - ../src:/app/src:rw
+            - ../package.json:/app/package.json
+            - ../.env:/app/.env
+            - ../swagger.json:/app/swagger.json
+        networks:
+            - traefik
+            - prismic-back
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=${TRAEFIK_NETWORK}"
+            - "traefik.http.routers.prismic-back-api.rule=Host(`prototype.${APEX_DOMAIN}`) && PathPrefix(`/api`)"
+            - "traefik.http.routers.prismic-back-api.entrypoints=websecure"
+            - "traefik.http.routers.prismic-back-api.tls=true"
+            - "traefik.http.routers.prismic-back-api.tls.certresolver=${CERT_RESOLVER}"
+            - "traefik.http.services.prismic-back-api.loadbalancer.server.port=3000"
+            - "traefik.http.routers.prismic-back-api.middlewares=prismic-back-api-cors"
+            - "traefik.http.middlewares.prismic-back-api-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE"
+            - "traefik.http.middlewares.prismic-back-api-cors.headers.accessControlAllowOriginList=*"
+            - "traefik.http.middlewares.prismic-back-api-cors.headers.accessControlAllowHeaders=Content-Type,Authorization"
+        depends_on:
+            - prismic-back-db
+            # - prismic-back-redis
+        restart: unless-stopped
+        # logging:
+        #   driver: "json-file"
+        #   options:
+        #     max-size: "10m"
+        #     max-file: "3"
+        # deploy:
+        #   resources:
+        #     limits:
+        #       cpus: '1.0'
+        #       memory: 1G
+        #     reservations:
+        #       cpus: '0.25'
+        #       memory: 512M
+
+    prismic-back-db:
+        image: postgres
+        container_name: prismic-back-db
+        env_file: .env
+        # set shared memory limit when using docker-compose
+        shm_size: 128mb
+        networks:
+            - traefik
+            - prismic-back
+        labels:
+            - "traefik.enable=true"
+            - "traefik.tcp.routers.prismic-back-db.rule=HostSNI(`*`)"
+            - "traefik.tcp.routers.prismic-back-db.entrypoints=prismic-back-db"
+            - "traefik.tcp.services.prismic-back-db.loadbalancer.server.port=5432"
+        volumes:
+            - ./init-scripts:/docker-entrypoint-initdb.d
+        healthcheck:
+            test: "pg_isready --username=${POSTGRES_USER} --dbname=${POSTGRES_DB}"
+            interval: 5s
+            timeout: 10s
+            retries: 10
+        restart: unless-stopped
+    # or set shared memory limit when deploy via swarm stack
+    #volumes:
+    #  - type: tmpfs
+    #    target: /dev/shm
+    #    tmpfs:
+    #      size: 134217728 # 128*2^20 bytes = 128Mb
+    # environment:
+    #     POSTGRES_PASSWORD: example
+
+
+    # prismic-back-redis:
+    #     image: redis:alpine
+    #     container_name: prismic-back-redis
+    #     command: redis-server --appendonly yes
+    #     volumes:
+    #         - ./volumes/redis:/data
+    #     networks:
+    #         - traefik
+    #         - prismic-back
+    #     healthcheck:
+    #         test: ["CMD", "redis-cli", "ping"]
+    #         interval: 5s
+    #         timeout: 10s
+    #         retries: 10
+    #     restart: unless-stopped
+
+    prismic-redoc:
+        image: redocly/redoc
+        container_name: prismic-redoc
+        env_file: 
+            - .env
+        volumes:
+            - ../swagger.json:/usr/share/nginx/html/swagger.json
+        environment:
+            - SPEC_URL=swagger.json
+            - REDOC_OPTIONS={"scrollYOffset":60,"hideDownloadButton":true,"expandResponses":"200,201","disableSearch":false,"requiredPropsFirst":true,"showExtensions":true}
+        networks:
+            - traefik
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=${TRAEFIK_NETWORK}"
+            - "traefik.http.routers.prismic-api-redoc.rule=Host(`docs-api.${APEX_DOMAIN}`)"
+            - "traefik.http.routers.prismic-api-redoc.entrypoints=websecure"
+            - "traefik.http.routers.prismic-api-redoc.tls=true"
+            - "traefik.http.routers.prismic-api-redoc.tls.certresolver=${CERT_RESOLVER}"
+            - "traefik.http.services.prismic-api-redoc.loadbalancer.server.port=80"
+
+networks:
+    traefik:
+        external: true
+    prismic-back:
+        driver: bridge
