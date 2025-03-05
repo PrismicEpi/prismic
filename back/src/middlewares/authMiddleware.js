@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+const AUTHENTIK_API_URL = process.env.AUTHENTIK_BASE_URL;
+
 const authMiddleware = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
@@ -10,7 +12,7 @@ const authMiddleware = async (req, res, next) => {
 
         try {
             const response = await axios.get(
-                'https://authentik.prismic.fr/api/v3/core/users/me/',
+                `${AUTHENTIK_API_URL}/api/v3/core/users/me/`,
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`
