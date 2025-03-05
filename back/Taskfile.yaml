@@ -22,3 +22,24 @@ tasks:
             - task: compose_down
             - task: compose_up
             - task: compose_log
+
+    down_tools:
+        cmds:
+            - |
+                sudo docker compose -f docker/compose.tools.yaml down -v
+
+    up_tools:
+        cmds:
+            - |
+                sudo docker compose -f docker/compose.tools.yaml up -d
+
+    tools_log:
+        cmds:
+            - |
+                sudo docker compose -f docker/compose.tools.yaml logs -f
+
+    tools:
+        cmds:
+            - task: down_tools
+            - task: up_tools
+            - task: tools_log
