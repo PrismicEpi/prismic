@@ -55,6 +55,9 @@ services:
         env_file: .env
         # set shared memory limit when using docker-compose
         shm_size: 128mb
+        environment:
+            - POSTGRES_HOST_AUTH_METHOD=trust
+            - POSTGRES_INITDB_ARGS=--auth-host=trust
         networks:
             - traefik
             - prismic-back

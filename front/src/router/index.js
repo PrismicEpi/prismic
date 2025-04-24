@@ -1,13 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
-import DashboardView from '@/views/DashboardView.vue'
-
+import ExperienceView from '@/views/ExperienceView.vue'
+import HistoriqueView from '@/views/HistoriqueView.vue'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/login', component: LoginView },
-    { path: '/', component: DashboardView, meta: { requiresAuth: true } },
-    { path: '/dashboard', component: DashboardView },
+    { path: '/', component: ExperienceView, meta: { requiresAuth: true } },
+    { path: '/historique', component: HistoriqueView, meta: { requiresAuth: true } },
   ],
 })
 

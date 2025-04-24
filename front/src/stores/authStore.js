@@ -33,7 +33,7 @@ export const useAuthStore = defineStore('auth', {
       console.log('response', response);
       if (response.status === 'ok') {
         this.setToken(token);
-        router.push('/dashboard');
+        router.push('/');
       } else {
         console.log('error', response);
       }
