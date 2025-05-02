@@ -1,0 +1,18 @@
+{
+    "experiment_id": "28010464-022a-4556-8995-da0fe57cdc2d",
+    "user_email": "usertestsecond",
+    "input_txt": "Testing power under humid conditions.",
+    "result_txt": "Test completed successfully under humid conditions.",
+    "experiment_date_start": "2025-04-24T14:30:00.000Z",
+    "experiment_date_end": "2025-04-24T15:15:00.000Z",
+    "laser_power": 30,
+    "frequency": 50.0,
+    "voltage_tension": 220,
+    "humidity": 85,
+    "temperature": 26,
+    "report": "The experiment was successful. Laser power remained stable, and humidity had a moderate effect on output stability.",
+    "graph_history": [1.2, 1.5, 1.7, 1.6, 1.9, 2.1, 2.0],
+    "success_rate": 98.7,
+    "status": "COMPLETED"
+  }
+  
