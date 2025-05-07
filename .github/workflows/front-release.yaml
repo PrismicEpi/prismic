@@ -8,12 +8,12 @@ on:
     paths:
       - 'front/**'
       - '.github/workflows/front-release.yml'
-  # push: # TODO:  Don't forget to remove it after the test
-  #   branches:
-  #     - master
-  #   paths:
-  #     - 'front/**'
-  #     - '.github/workflows/front-release.yml'
+  push: # TODO:  Don't forget to remove it after the test
+    branches:
+      - master
+    paths:
+      - 'front/**'
+      - '.github/workflows/front-release.yml'
 
 
 permissions:
