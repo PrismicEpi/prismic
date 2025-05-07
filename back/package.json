@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "docker": "nodemon --env-file=.env /app/src/server.js",
+    "local": "nodemon --env-file=.env src/server.js",
     "dev": "concurrently \"pnpm docker\" \"pnpm watch-swagger\"",
     "watch-swagger": "nodemon --config nodemon.toFix.json",
     "generate-swagger": "node scripts/generate-swagger.js"
