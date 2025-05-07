@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import authRoute from "./routes/authRoute.js";
+import reportController from "./routes/reportRoute.js";
+import expressListEndpoints from 'express-list-endpoints';
 const app = express();
 
 // app.use(authMiddleware);
@@ -20,5 +22,10 @@ app.use(express.json());
 
 // Routes
 app.use("/api", authRoute);
+app.use("/api", reportController);
+
+// Loggers
+console.log("Routes disponibles : ");
+console.log(expressListEndpoints(app));
 
 export default app;
