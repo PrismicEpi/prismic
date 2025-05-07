@@ -1,0 +1,9 @@
+{
+  "packages": {
+    "front": {
+      "release-type": "node",
+      "changelog-path": "front/CHANGELOG.md",
+      "package-name": "prismic-prototype-front"
+    }
+  }
+}
