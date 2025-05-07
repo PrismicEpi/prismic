@@ -1,18 +1,20 @@
 name: Release Frontend
-
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - 'front/**'
-      - '.github/workflows/front-release.yml'
   pull_request:
+    types:
+      - closed
     branches:
       - master
     paths:
       - 'front/**'
       - '.github/workflows/front-release.yml'
+  # push: # TODO:  Don't forget to remove it after the test
+  #   branches:
+  #     - master
+  #   paths:
+  #     - 'front/**'
+  #     - '.github/workflows/front-release.yml'
+
 
 permissions:
   contents: write
@@ -20,15 +22,18 @@ permissions:
 
 jobs:
   release-front:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
+        with:
+          fetch-depth: 0  # Important: Release Please needs the full history
       - name: Run release-please
         uses: googleapis/release-please-action@v4
         with:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
+          package-name: front # Add package-name to target release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
