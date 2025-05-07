@@ -1,0 +1,7 @@
+{
+  "watch": ["src/routes", "src/controllers", "src/db/schema"],
+  "ext": "js",
+  "ignore": ["*.test.js", "*.spec.js"],
+  "exec": "node scripts/generate-swagger.js",
+  "delay": "1000"
+}
