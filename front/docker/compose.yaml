@@ -1,0 +1,52 @@
+# TODO : Faire les depends on, les healthcheck, uptime kuma/discord notification, backup duplicati, secrets infisical, better gestion dans Taskfile 2 option quel service redémarrer, et les logs
+name: prismic-prototype
+
+services:
+    front:
+        container_name: front
+        build:
+            context: ../
+            dockerfile: ./docker/Dockerfile
+        env_file: .env
+        # TODO : Voir à quoi peut servir node_env pour le code abstrait
+        # environment:
+        #   - NODE_ENV=dev
+        volumes:
+            - ../src:/app/src:rw
+            - ../package.json:/app/package.json
+            - ../.env:/app/.env
+        networks:
+            - traefik
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=${TRAEFIK_NETWORK}"
+            - "traefik.http.routers.prismic-front.rule=Host(`prototype.${APEX_DOMAIN}`)"
+            - "traefik.http.routers.prismic-front.entrypoints=websecure"
+            - "traefik.http.routers.prismic-front.tls=true"
+            - "traefik.http.routers.prismic-front.tls.certresolver=${CERT_RESOLVER}"
+            - "traefik.http.routers.prismic-front.service=prismic-front"
+            - "traefik.http.services.prismic-front.loadbalancer.server.port=5173"
+            # Dans le cas où le front est en dehors du réseau traefik, et donc de l'API
+            # - "traefik.http.routers.prismic-front.middlewares=prismic-front-cors"
+            # - "traefik.http.middlewares.prismic-front-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE"
+            # - "traefik.http.middlewares.prismic-front-cors.headers.accessControlAllowOriginList=*"
+            # - "traefik.http.middlewares.prismic-front-cors.headers.accessControlAllowHeaders=Content-Type,Authorization"
+        restart: unless-stopped
+        # TODO : Ajouter les logs et les stocker dans un volume, pour ^tre visualisés, ex Grafana, Loki, etc
+        # logging:
+        #   driver: "json-file"
+        #   options:
+        #     max-size: "10m"
+        #     max-file: "3"
+        # deploy:
+        #   resources:
+        #     limits:
+        #       cpus: '1.0'
+        #       memory: 1G
+        #     reservations:
+        #       cpus: '0.25'
+        #       memory: 512M
+
+networks:
+    traefik:
+        external: true
