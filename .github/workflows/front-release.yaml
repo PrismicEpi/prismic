@@ -8,13 +8,6 @@ on:
     paths:
       - 'front/**'
       - '.github/workflows/front-release.yml'
-  push: # TODO:  Don't forget to remove it after the test
-    branches:
-      - master
-    paths:
-      - 'front/**'
-      - '.github/workflows/front-release.yml'
-
 
 permissions:
   contents: write
@@ -35,6 +28,5 @@ jobs:
         with:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
-          package-name: front # Add package-name to target release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
