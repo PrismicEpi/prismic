@@ -30,6 +30,6 @@ expressJSDocSwagger(app)(swaggerOptions);
 
 // Routes
 app.use("/api", authRoute);
-app.use("/api/experiments", experimentRoute)
+app.use("/api", experimentRoute)
 
 export default app;
