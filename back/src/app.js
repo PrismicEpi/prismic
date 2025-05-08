@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import authRoute from "./routes/authRoute.js";
+import experimentRoute from "./routes/experimentRoute.js";
 const app = express();
 
 // app.use(authMiddleware);
@@ -20,5 +21,6 @@ app.use(express.json());
 
 // Routes
 app.use("/api", authRoute);
+app.use("/api", experimentRoute)
 
 export default app;
