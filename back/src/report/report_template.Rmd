@@ -1,0 +1,38 @@
+---
+title: "Rapport d'Expérience"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+data <- readRDS("data.rds")
+```
+
+## Informations générale
+
+**Utilisateur** : `r data$user_email`  
+**Texte d'entrée** : `r data$input_txt`  
+**Date de début** : `r data$experiment_date_start`  
+**Date de fin** : `r data$experiment_date_end`  
+**Statut** : `r data$status`  
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+par(mar=c(4, 4, 1, 1))
+if (length(data$graph_history) > 0) {
+  plot(1:length(data$graph_history), data$graph_history, type = "l", main = "Historique", xlab = "Temps", ylab = "Valeur")
+}
+```
+
+## Paramètres de l'Expérience
+
+**Puissance du laser** : `r data$laser_power` W  
+**Fréquence** : `r data$frequency` Hz  
+**Tension** : `r data$voltage_tension` V  
+**Humidité** : `r data$humidity` %  
+**Température** : `r data$temperature` °C  
+
+## Résultats
+
+**Résultat de l'expérience** : `r data$result_txt`  
+**Rapport** : `r data$report`  
+**Taux de réussite** : `r data$success_rate` %  
