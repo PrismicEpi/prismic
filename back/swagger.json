@@ -38,13 +38,64 @@
         "description": "",
         "type": "object",
         "properties": {
-          "token": {
-            "description": "JWT token",
+          "userName": {
+            "description": "The user's name.",
             "type": "string"
           },
-          "message": {
-            "description": "Success message",
+          "email": {
+            "description": "The user's email.",
             "type": "string"
+          },
+          "avatar": {
+            "description": "URL to the user's avatar.",
+            "type": "string"
+          }
+        }
+      },
+      "Experiment": {
+        "description": "",
+        "required": [
+          "experiment_id",
+          "user_email",
+          "input_txt",
+          "experiment_date_start"
+        ],
+        "type": "object",
+        "properties": {
+          "experiment_id": {
+            "description": "Experiment UUID",
+            "type": "string"
+          },
+          "user_email": {
+            "description": "User email",
+            "type": "string"
+          },
+          "input_txt": {
+            "description": "Input text",
+            "type": "string"
+          },
+          "experiment_date_start": {
+            "description": "Start date (ISO 8601 format)",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UpdateExperimentRequest": {
+        "description": "",
+        "required": [
+          "experiment_id",
+          "updateFields"
+        ],
+        "type": "object",
+        "properties": {
+          "experiment_id": {
+            "description": "ID of the experiment to update",
+            "type": "string"
+          },
+          "updateFields": {
+            "description": "Fields to update (like status, result_txt, etc.)",
+            "type": "object"
           }
         }
       }
@@ -108,6 +159,265 @@
           "required": true
         }
       }
+    },
+    "/api/experiments": {
+      "get": {
+        "deprecated": false,
+        "summary": "Get all experiments",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of experiments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Experiment"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [],
+        "tags": [
+          "Experiment"
+        ]
+      }
+    },
+    "/api/experiments/get-by-user-mail": {
+      "get": {
+        "deprecated": false,
+        "summary": "Get experiments by user email",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiments of a user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Experiment"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_email",
+            "in": "query",
+            "description": "User email",
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "Experiment"
+        ]
+      }
+    },
+    "/api/experiment/get-by-experiment-id": {
+      "get": {
+        "deprecated": false,
+        "summary": "Get a single experiment by ID",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiment details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Experiment"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "experiment_id",
+            "in": "query",
+            "description": "Experiment ID",
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "Experiment"
+        ]
+      }
+    },
+    "/api/experiment": {
+      "post": {
+        "deprecated": false,
+        "summary": "Create a new experiment",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Experiment created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Experiment"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [],
+        "tags": [
+          "Experiment"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Experiment"
+              }
+            }
+          },
+          "description": "New experiment data",
+          "required": true
+        }
+      },
+      "patch": {
+        "deprecated": false,
+        "summary": "Update fields of an experiment",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated experiment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Experiment"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [],
+        "tags": [
+          "Experiment"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExperimentRequest"
+              }
+            }
+          },
+          "description": "Update payload",
+          "required": true
+        }
+      }
+    },
+    "/api/experiment/delete-by-experiment-id": {
+      "delete": {
+        "deprecated": false,
+        "summary": "Delete an experiment by ID",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deletion confirmation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [],
+        "tags": [
+          "Experiment"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "Experiment ID to delete",
+          "required": true
+        }
+      }
+    },
+    "/api/experiments/delete-by-user-mail": {
+      "delete": {
+        "deprecated": false,
+        "summary": "Delete all experiments for a user",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deletion confirmation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [],
+        "tags": [
+          "Experiment"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "User email",
+          "required": true
+        }
+      }
     }
   },
   "tags": [
@@ -117,6 +427,10 @@
     },
     {
       "name": "Authentication",
+      "description": ""
+    },
+    {
+      "name": "Experiment",
       "description": ""
     }
   ]

@@ -1,10 +1,4 @@
 DROP TABLE IF EXISTS "ExperimentModel" CASCADE;
--- DROP TABLE IF EXISTS "Breach" CASCADE;
--- DROP TABLE IF EXISTS "Client" CASCADE;
--- DROP TABLE IF EXISTS "Command" CASCADE;
--- DROP TABLE IF EXISTS "Host" CASCADE;
--- DROP TABLE IF EXISTS "KeyStroke" CASCADE;
--- DROP TABLE IF EXISTS "Keylog" CASCADE;
 
 CREATE TABLE "ExperimentModel" (
     "user_email" TEXT NOT NULL,
@@ -15,12 +9,13 @@ CREATE TABLE "ExperimentModel" (
     "experiment_date_end" TIMESTAMP,
     "laser_power" INT,
     "frequency" FLOAT,
-    "voltage_tension" INT,
+    "voltage_tension" FLOAT,
     "humidity" FLOAT,
     "temperature" FLOAT,
     "report" TEXT,
     "graph_history" FLOAT[][],
     "success_rate" FLOAT,
     "status" TEXT,
+    "duration_sec" INT,
     PRIMARY KEY ("experiment_id")
 );

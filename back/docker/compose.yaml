@@ -68,6 +68,7 @@ services:
             - "traefik.tcp.services.prismic-back-db.loadbalancer.server.port=5432"
         volumes:
             - ./init-scripts:/docker-entrypoint-initdb.d
+            - ./volumes/prismic-back-db-data:/var/lib/postgresql/data
         healthcheck:
             test: "pg_isready --username=${POSTGRES_USER} --dbname=${POSTGRES_DB}"
             interval: 5s

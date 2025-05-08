@@ -7,15 +7,6 @@ export const ExperimentModel = sequelize.define('ExperimentModel', {
         allowNull: false,
         primaryKey: true
     },
-    // user_id: {
-    //     type: DataTypes.UUID,
-    //     allowNull: false,
-    //     references: {
-    //         model: 'Users',
-    //         key: 'id'
-    //     },
-    //     onDelete: 'CASCADE'
-    // },
     user_email: {
         type: DataTypes.TEXT,
         allowNull: false,
@@ -45,7 +36,7 @@ export const ExperimentModel = sequelize.define('ExperimentModel', {
         allowNull: true
     },
     voltage_tension: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: true
     },
     humidity: {
@@ -54,6 +45,10 @@ export const ExperimentModel = sequelize.define('ExperimentModel', {
     },
     temperature: {
         type: DataTypes.FLOAT,
+        allowNull: true
+    },
+    duration_sec: {
+        type: DataTypes.INTEGER,
         allowNull: true
     },
     report: {

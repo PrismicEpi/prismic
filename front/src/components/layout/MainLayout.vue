@@ -4,7 +4,7 @@
     <aside class="w-64 h-full bg-[#1A1C23] flex flex-col">
       <!-- Logo en haut -->
       <div class="p-4 flex justify-center">
-        <img src="@/assets/logo.svg" alt="PRISMIC Logo" class="h-10" />
+        <img src="@/assets/prismic.webp" alt="PRISMIC Logo" class="h-10" />
       </div>
       
       <!-- Menu principal -->
@@ -53,25 +53,24 @@
     <div class="flex-1 flex flex-col overflow-hidden">
       <!-- Header -->
       <header class="bg-[#1A1C23] p-4 flex justify-between items-center">
-        <div class="flex items-center">
-          <div class="relative">
-            <button class="flex items-center space-x-2 focus:outline-none" @click="toggleUserMenu">
-              <img src="@/assets/avatar.png" alt="Avatar" class="h-8 w-8 rounded-full" />
-              <span>Utilisateur</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            <div v-if="userMenuOpen" class="absolute mt-2 w-48 bg-[#1A1C23] rounded-md shadow-lg py-1 z-10">
-              <a href="#" class="block px-4 py-2 hover:bg-[#232631]">Profil</a>
-              <a href="#" class="block px-4 py-2 hover:bg-[#232631]">Déconnexion</a>
-            </div>
+        <!-- User Info and Menu -->
+        <div class="relative ml-auto">
+          <button v-if="authStore.user" class="flex items-center space-x-2 focus:outline-none" @click="toggleUserMenu">
+            <img :src="authStore.user.avatar || '@/assets/avatar.png'" alt="Avatar" class="h-8 w-8 rounded-full" />
+            <span>{{ authStore.user.userName || 'Utilisateur' }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div v-if="userMenuOpen && authStore.user" class="absolute mt-2 w-48 bg-[#1A1C23] rounded-md shadow-lg py-1 z-10">
+            <a href="#" class="block px-4 py-2 hover:bg-[#232631]">Profil</a>
+            <a href="#" @click.prevent="handleLogout" class="block px-4 py-2 hover:bg-[#232631]">Déconnexion</a>
           </div>
         </div>
+        
+        <!-- Removed Prismic Logo from here -->
         <div>
-          <router-link to="/">
-            <img src="@/assets/logo.svg" alt="PRISMIC Logo" class="h-8" />
-          </router-link>
+          <!-- Intentionally empty or add other header items if needed -->
         </div>
       </header>
       
@@ -85,10 +84,18 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useAuthStore } from '@/stores/authStore'; // Import auth store
 
+const authStore = useAuthStore(); // Initialize auth store
 const userMenuOpen = ref(false);
 
 const toggleUserMenu = () => {
   userMenuOpen.value = !userMenuOpen.value;
+};
+
+const handleLogout = async () => {
+  await authStore.logout();
+  userMenuOpen.value = false; // Close menu after logout
+  // Router will redirect to /login via authStore.logout()
 };
 </script> 

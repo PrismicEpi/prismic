@@ -11,8 +11,9 @@ const router = Router();
 
 /**
  * @typedef {object} LoginResponse
- * @property {string} token - JWT token
- * @property {string} message - Success message
+ * @property {string} userName - The user's name.
+ * @property {string} email - The user's email.
+ * @property {string} avatar - URL to the user's avatar.
  */
 
 /**
