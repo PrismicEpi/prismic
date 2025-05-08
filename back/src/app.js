@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import authRoute from "./routes/authRoute.js";
 import reportController from "./routes/reportRoute.js";
+import experimentRoute from "./routes/experimentRoute.js";
 import expressListEndpoints from 'express-list-endpoints';
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(express.json());
 // Routes
 app.use("/api", authRoute);
 app.use("/api", reportController);
+app.use("/api", experimentRoute)
 
 // Loggers
 console.log("Routes disponibles : ");
