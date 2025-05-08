@@ -1,0 +1,45 @@
+# TODO : Faire les depends on, les healthcheck, uptime kuma/discord notification, backup duplicati, secrets infisical, better gestion dans Taskfile 2 option quel service redémarrer, et les logs
+name: prismic
+
+services:
+    nocodb: 
+      image: "nocodb/nocodb:latest"
+      container_name: nocodb
+      env_file: .env.tools
+      restart: unless-stopped
+      volumes: 
+        - "./volumes/nocodb/nc_data:/usr/app/data"
+      networks:
+        - traefik
+        - prismic-nocodb-db
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik"
+        - "traefik.http.routers.prismic-nocodb.rule=Host(`nocodb.${APEX_DOMAIN}`)"
+        - "traefik.http.routers.prismic-nocodb.entrypoints=websecure"
+        - "traefik.http.routers.prismic-nocodb.tls=true"
+        - "traefik.http.routers.prismic-nocodb.tls.certresolver=${CERT_RESOLVER}"
+        - "traefik.http.services.prismic-nocodb.loadbalancer.server.port=8080"
+
+    # nocodb-db:
+    #     image: postgres
+    #     container_name: nocodb-db
+    #     env_file: .env.tools
+    #     volumes:
+    #         - "./volumes/nocodb/postgres_data:/var/lib/postgresql/data"
+    #     # set shared memory limit when using docker-compose
+    #     shm_size: 128mb
+    #     networks:
+    #         - prismic-nocodb-db  
+    #     healthcheck:
+    #         test: "pg_isready --username=${POSTGRES_USER} --dbname=${POSTGRES_DB}"
+    #         interval: 5s
+    #         timeout: 10s
+    #         retries: 10
+    #     restart: unless-stopped
+
+networks:
+    traefik:
+        external: true
+    prismic-nocodb-db:
+        driver: bridge
