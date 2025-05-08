@@ -3,3 +3,4 @@ docker/.env
 docker/.env.tools
 .env
 docker/volumes
+coverage/
