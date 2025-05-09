@@ -69,14 +69,13 @@ const fetchExperimentDetails = async () => {
   
   try {
     const response = await fetch(`${apiUrl}/experiments`);
-
-    console.log(response);
     
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();
+
     
     if (!Array.isArray(data)) {
       throw new Error('Format de données incorrect: les données ne sont pas un tableau');
@@ -88,6 +87,8 @@ const fetchExperimentDetails = async () => {
     if (!foundExperiment) {
       throw new Error(`Expérience avec l'ID ${experimentId} non trouvée`);
     }
+
+    console.log(foundExperiment);
     
     // Formater les données
     experiment.value = {
@@ -107,8 +108,9 @@ const fetchExperimentDetails = async () => {
       laserPower: foundExperiment.laser_power || 0,
       successRate: Math.round((foundExperiment.success_rate || 0) * 100),
       status: foundExperiment.status || 'unknown',
-      report: foundExperiment.report ? true : null,
-      reportType: foundExperiment.report_type || null,
+      report: foundExperiment.report || null,
+      // reportType: foundExperiment.report_type || null,
+      // reportUrl: foundExperiment.report ? `${apiUrl}/report/${foundExperiment.experiment_id}` : null,
       graphHistory: foundExperiment.graph_history || [],
       rawData: { ...foundExperiment, report: '[Binary data]' }
     };

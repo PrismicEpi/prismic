@@ -43,6 +43,7 @@ export const getReport = async (req, res) => {
         
         const experiment = await ExperimentModel.findOne({ where: { experiment_id } });
         
+        console.log(experiment);
         if (!experiment) {
             return res.status(404).json({ error: 'Experiment not found' });
         }

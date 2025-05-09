@@ -3,3 +3,5 @@ docker/.env
 docker/.env.tools
 .env
 docker/volumes
+src/report/data.rds
+src/report/*.pdf

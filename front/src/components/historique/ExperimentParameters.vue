@@ -93,8 +93,8 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
         <h3 class="text-lg font-semibold text-white mb-4">Rapport d'expérience</h3>
         
         <div v-if="experiment.report" class="bg-[#232631] rounded-lg p-4">
-          <!-- PDF Viewer -->
-          <div v-if="experiment.rawData?.report_type === 'application/pdf'" class="w-full">
+          <!-- Report Viewer (works for PDF and text) -->
+          <div class="w-full">
             <iframe 
               :src="`${apiBaseUrl}/report/${experiment.id}`" 
               class="w-full h-[600px] border-0 rounded" 
@@ -114,11 +114,6 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
                 Télécharger le rapport
               </a>
             </div>
-          </div>
-          
-          <!-- Display as text if not PDF -->
-          <div v-else>
-            <p class="text-sm text-[#E2E8F0] whitespace-pre-line">{{ experiment.report }}</p>
           </div>
         </div>
         
