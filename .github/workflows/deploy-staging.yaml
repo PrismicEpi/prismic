@@ -83,8 +83,9 @@ jobs:
 
       - name: Create .env for front
         run: |
-          echo "API_URL=${{ secrets.API_URL }}" > /tmp/front.env
-          echo "FRONT_URL=${{ secrets.FRONT_URL }}" >> /tmp/front.env
+          echo "CERT_RESOLVER=${{ secrets.CERT_RESOLVER }}" > /tmp/front.env
+          echo "TRAEFIK_NETWORK=${{ secrets.TRAEFIK_NETWORK }}" >> /tmp/front.env
+          echo "APEX_DOMAIN=${{ secrets.APEX_DOMAIN }}" >> /tmp/front.env
 
       - name: Deploy Front to Server and Restart Docker
         run: |
@@ -95,12 +96,15 @@ jobs:
             # Ensure the directory exists
             mkdir -p /opt/prismic-staging/front/docker
 
+            # Copy all the code from github runner and put it
+            # to a specific folder
+            cd /opt/prismic-staging/front && rsync --delete -avz /opt/runner-prototype/_work/prismic/prismic/front/  .
+
             # Copy .env to the server
             cat /tmp/front.env > /opt/prismic-staging/front/docker/.env
 
-            # Copy all the code from github runner and put it
-            # to a specific folder
-            cd /opt/prismic-staging/front && rsync --delete -avz /home/runner/work/prismic/prismic/front/  .
+            # Copy .env.example to the server
+            cp /opt/prismic-staging/front/.env.example /opt/prismic-staging/front/.env
            
             # Start Docker Compose (Backend)
             cd /opt/prismic-staging/front/docker && docker compose -f compose.staging.yaml up -d
