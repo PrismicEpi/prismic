@@ -36,7 +36,7 @@ export const ExperimentModel = sequelize.define('ExperimentModel', {
         allowNull: true
     },
     voltage_tension: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: true
     },
     humidity: {
@@ -47,7 +47,15 @@ export const ExperimentModel = sequelize.define('ExperimentModel', {
         type: DataTypes.FLOAT,
         allowNull: true
     },
+    duration_sec: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     report: {
+        type: DataTypes.BLOB,
+        allowNull: true
+    },
+    report_type: {
         type: DataTypes.TEXT,
         allowNull: true
     },

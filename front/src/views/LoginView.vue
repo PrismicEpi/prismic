@@ -1,4 +1,3 @@
-
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -36,11 +35,11 @@ const login = async () => {
     //   isMessageError.value = true
     // }
   } catch (error) {
-    console.error('Network error:', error)
-    messageError.value = 'Network error occurred'
-    isMessageError.value = true
+    console.error('Login attempt failed:', error.message);
+    messageError.value = error.message || 'An unexpected error occurred. Please check your token and try again.';
+    isMessageError.value = true;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 </script>

@@ -4,6 +4,7 @@ import expressJSDocSwagger from "express-jsdoc-swagger";
 import { swaggerOptions } from "./config/swagger.js";
 
 // import authMiddleware from "./middlewares/authMiddleware.js";
+// import keystroke from "./routes/keystrokeRoute.js";
 import authRoute from "./routes/authRoute.js";
 import experimentRoute from "./routes/experimentRoute.js";
 import reportRoute from "./routes/reportRoute.js";

@@ -7,15 +7,18 @@ import { getAllExperiments, getExperimentByExperimentId, getExperimentsByUserMai
  * @property {string} experiment_id.required - Experiment UUID
  * @property {string} user_email.required - User email
  * @property {string} input_txt.required - Input text
- * @property {string} experiment_date_start.required - Start date - date-time
- * @property {string} experiment_date_end - End date - date-time
- * @property {string} result_txt - Result text
- * @property {object} laser_config - Laser configuration
- * @property {object} environment_config - Environment configuration
- * @property {string} report - Generated report
- * @property {Array.<Array.<number>>} graph_history - Graph history as array of points
- * @property {number} success_rate - Success rate
- * @property {string} status.required - Experiment status
+ * @property {string} experiment_date_start.required - Start date (ISO 8601 format) - date-time
+ * @property {string} [experiment_date_end] - End date (ISO 8601 format) - date-time
+ * @property {string} [result_txt] - Result text
+ * @property {number} [laser_power] - Laser power in an appropriate unit (e.g., mW)
+ * @property {number} [frequency] - Frequency in Hz
+ * @property {number} [voltage_tension] - Voltage tension in Volts
+ * @property {number} [humidity] - Humidity percentage (e.g., 0-100)
+ * @property {number} [temperature] - Temperature in Celsius
+ * @property {string} [report] - Generated report content or link
+ * @property {Array<Array<number>>} [graph_history] - Graph history as array of points [timestamp, value]
+ * @property {number} [success_rate] - Success rate (e.g., 0-1)
+ * @property {string} [status] - Experiment status (e.g., pending, running, completed, failed)
  */
 
 /**
