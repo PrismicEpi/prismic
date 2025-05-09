@@ -15,7 +15,6 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     environment: staging
     runs-on: self-hosted
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -30,38 +29,43 @@ jobs:
 
       - name: Create .env for backend
         run: |
-          echo "BACKEND_API_KEY=${{ secrets.BACKEND_API_KEY }}" > /tmp/backend.env # Create a temporary file
-          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> /tmp/backend.env # Append more secrets
-          echo "CERT_RESOLVER=${{ secrets.CERT_RESOLVER }}" >> /tmp/backend.env # Append more secrets
-          echo "TRAEFIK_NETWORK=${{ secrets.TRAEFIK_NETWORK }}" >> /tmp/backend.env # Append more secrets
-          echo "APEX_DOMAIN=${{ secrets.APEX_DOMAIN }}" >> /tmp/backend.env # Append more secrets
-          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> /tmp/backend.env # Append more secrets
-          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> /tmp/backend.env # Append more secrets
-          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> /tmp/backend.env # Append more secrets
-          echo "NC_DB=${{ secrets.NC_DB }}" >> /tmp/backend.env # Append more secrets
-          echo "NC_ADMIN_EMAIL=${{ secrets.NC_ADMIN_EMAIL }}" >> /tmp/backend.env # Append more secrets
-          echo "NC_ADMIN_PASSWORD=${{ secrets.NC_ADMIN_PASSWORD }}" >> /tmp/backend.env # Append more secrets
-          echo "NC_DISABLE_CACHE=${{ secrets.NC_DISABLE_CACHE }}" >> /tmp/backend.env # Append more secrets
+          echo "BACKEND_API_KEY=${{ secrets.BACKEND_API_KEY }}" > /tmp/backend.env
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> /tmp/backend.env
+          echo "CERT_RESOLVER=${{ secrets.CERT_RESOLVER }}" >> /tmp/backend.env
+          echo "TRAEFIK_NETWORK=${{ secrets.TRAEFIK_NETWORK }}" >> /tmp/backend.env
+          echo "APEX_DOMAIN=${{ secrets.APEX_DOMAIN }}" >> /tmp/backend.env
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> /tmp/backend.env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> /tmp/backend.env
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> /tmp/backend.env
+          echo "NC_DB=${{ secrets.NC_DB }}" >> /tmp/backend.env
+          echo "NC_ADMIN_EMAIL=${{ secrets.NC_ADMIN_EMAIL }}" >> /tmp/backend.env
+          echo "NC_ADMIN_PASSWORD=${{ secrets.NC_ADMIN_PASSWORD }}" >> /tmp/backend.env
+          echo "NC_DISABLE_CACHE=${{ secrets.NC_DISABLE_CACHE }}" >> /tmp/backend.env
 
-      - name: Deploy Backend to Server
+      - name: Deploy Backend to Server and Restart Docker
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /opt/prismic-staging/back/docker"
-          scp /tmp/backend.env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/prismic-staging/back/docker/.env #copy the file and rename it to .env
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+            # Stop existing containers (ignore errors if they don't exist):
+            cd /opt/prismic-staging/back/docker && docker compose -f compose.staging.yaml down || true
 
-      - name: Create .env for back
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /opt/prismic-staging/back/ && cp .env.example .env"
+            # Ensure the directory exists
+            mkdir -p /opt/prismic-staging/back/docker
 
-      - name: Start Docker Compose (Backend)
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /opt/prismic-staging/back/docker && docker compose -f compose.staging.yaml up -d"
+            # Copy .env to the server
+            cat /tmp/backend.env > /opt/prismic-staging/back/docker/.env
+
+            # Copy all the code from github runner and put it
+            # to a specific folder
+            cd /opt/prismic-staging/back && rsync --delete -avz /opt/runner-prototype/_work/prismic/prismic/back  .
+           
+            # Start Docker Compose (Backend)
+            cd /opt/prismic-staging/back/docker && docker compose -f compose.staging.yaml up -d
+          EOF
 
   deploy-front:
-      # similar steps as deploy-back, but creates and deploys the front .env file
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     environment: staging
     runs-on: self-hosted
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -76,10 +80,25 @@ jobs:
 
       - name: Create .env for front
         run: |
-          echo "API_URL=${{ secrets.API_URL }}" > /tmp/front.env # Create a temporary file
-          echo "FRONT_URL=${{ secrets.FRONT_URL }}" >> /tmp/front.env # Append more secrets
+          echo "API_URL=${{ secrets.API_URL }}" > /tmp/front.env
+          echo "FRONT_URL=${{ secrets.FRONT_URL }}" >> /tmp/front.env
 
-      - name: Deploy Front to Server
+      - name: Deploy Front to Server and Restart Docker
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /opt/prismic-staging/front/docker"
-          scp /tmp/front.env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/prismic-staging/front/docker/.env #copy the file and rename it to .env
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+            # Stop existing containers (ignore errors if they don't exist):
+            cd /opt/prismic-staging/front/docker && docker compose -f compose.staging.yaml down || true
+
+            # Ensure the directory exists
+            mkdir -p /opt/prismic-staging/front/docker
+
+            # Copy .env to the server
+            cat /tmp/front.env > /opt/prismic-staging/front/docker/.env
+
+            # Copy all the code from github runner and put it
+            # to a specific folder
+            cd /opt/prismic-staging/front && rsync --delete -avz /home/runner/work/prismic/prismic/front/  .
+           
+            # Start Docker Compose (Backend)
+            cd /opt/prismic-staging/front/docker && docker compose -f compose.staging.yaml up -d
+          EOF
