@@ -32,7 +32,17 @@ jobs:
         run: |
           echo "BACKEND_API_KEY=${{ secrets.BACKEND_API_KEY }}" > /tmp/backend.env # Create a temporary file
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> /tmp/backend.env # Append more secrets
-
+          echo "CERT_RESOLVER=${{ secrets.CERT_RESOLVER }}" >> /tmp/backend.env # Append more secrets
+          echo "TRAEFIK_NETWORK=${{ secrets.TRAEFIK_NETWORK }}" >> /tmp/backend.env # Append more secrets
+          echo "APEX_DOMAIN=${{ secrets.APEX_DOMAIN }}" >> /tmp/backend.env # Append more secrets
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> /tmp/backend.env # Append more secrets
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> /tmp/backend.env # Append more secrets
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> /tmp/backend.env # Append more secrets
+          echo "NC_DB_HOST=${{ secrets.NC_DB_HOST }}" >> /tmp/backend.env # Append more secrets
+          echo "NC_ADMIN_EMAIL=${{ secrets.NC_ADMIN_EMAIL }}" >> /tmp/backend.env # Append more secrets
+          echo "NC_ADMIN_PASSWORD=${{ secrets.NC_ADMIN_PASSWORD }}" >> /tmp/backend.env # Append more secrets
+          echo "NC_DISABLE_CACHE=${{ secrets.NC_DISABLE_CACHE }}" >> /tmp/backend.env # Append more secrets
+          
       - name: Deploy Backend to Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /opt/prismic-staging/back/docker"
