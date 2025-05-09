@@ -57,7 +57,7 @@ jobs:
             cat /tmp/backend.env > /opt/prismic-prod/back/docker/.env
 
             # Copy .env.example to the server
-            cp /opt/prismic-prod/back/.env.example /opt/prismic-prod/back/.env
+            cat /tmp/backend.env /opt/prismic-prod/back/.env
            
             # Start Docker Compose (Backend)
             cd /opt/prismic-prod/back/docker && docker compose -f compose.yaml up -d

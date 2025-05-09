@@ -1,6 +1,9 @@
 name: Deploy to Staging
 
 on:
+  push:
+    branches:
+      - staging
   pull_request:
     types:
       - closed
@@ -57,7 +60,7 @@ jobs:
             cat /tmp/backend.env > /opt/prismic-staging/back/docker/.env
 
             # Copy .env.example to the server
-            cp /opt/prismic-staging/back/.env.example /opt/prismic-staging/back/.env
+            cat /tmp/backend.env /opt/prismic-staging/back/.env
            
             # Start Docker Compose (Backend)
             cd /opt/prismic-staging/back/docker && docker compose -f compose.staging.yaml up -d
