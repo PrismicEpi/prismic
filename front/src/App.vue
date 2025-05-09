@@ -1,11 +1,18 @@
 <template>
   <div id="app">
-    <router-view />
+    <MainLayout v-if="!isLoginPage">
+      <router-view />
+    </MainLayout>
+    <router-view v-else />
   </div>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import MainLayout from '@/components/layout/MainLayout.vue'
+import { computed } from 'vue'
 
 const router = useRouter()
+const route = useRoute()
+const isLoginPage = computed(() => route.path === '/login')
 </script>

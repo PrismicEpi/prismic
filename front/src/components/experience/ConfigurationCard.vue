@@ -54,6 +54,23 @@
               :disabled="isExperimentActive"
             />
           </div>
+          
+          <div>
+            <div class="flex justify-between">
+              <label for="laserPower" class="block text-sm text-[#E2E8F0]">Puissance du laser</label>
+              <span class="text-sm text-[#E2E8F0]">{{ laserPower }} mW</span>
+            </div>
+            <input 
+              type="range" 
+              id="laserPower" 
+              v-model="laserPower" 
+              min="0" 
+              max="100" 
+              step="1"
+              class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#7E3AF2] disabled:opacity-75 disabled:cursor-not-allowed"
+              :disabled="isExperimentActive"
+            />
+          </div>
         </div>
       </div>
       
@@ -159,6 +176,7 @@ const character = ref('A');
 let previousValidCharacter = 'A'; // Store last valid character
 const voltage = ref(1.7);
 const frequency = ref(50);
+const laserPower = ref(50);
 const temperature = ref(25);
 const humidity = ref(50);
 const duration = ref(5);
@@ -192,6 +210,7 @@ const loadPreset = () => {
     case 'high_success': // Aim for success_rate >= 0.9
       voltage.value = 2.5;    // Good voltage (1.5-3.5 optimal base)
       frequency.value = 32;   // OPF = 2.5 * 32 = 80 (optimal)
+      laserPower.value = 60;  // Good laser power
       temperature.value = 25; // Optimal temp
       humidity.value = 50;    // Optimal humidity
       duration.value = 20; 
@@ -199,6 +218,7 @@ const loadPreset = () => {
     case 'partial_temp_voltage': // Aim for 0.1 <= success_rate < 0.9
       voltage.value = 1.2;    // Low-ish voltage (base score 0.5)
       frequency.value = 50;   // OPF = 1.2 * 50 = 60 (off from 80)
+      laserPower.value = 45;  // Medium laser power
       temperature.value = 32; // Temp a bit high (moderate penalty)
       humidity.value = 60;    // Optimal humidity
       duration.value = 25;
@@ -206,6 +226,7 @@ const loadPreset = () => {
     case 'crash_voltage': // Aim for success_rate < 0.1
       voltage.value = 0.3;    // Extreme low voltage (should force crash)
       frequency.value = 40;   // Freq doesn't matter much if voltage crashes
+      laserPower.value = 20;  // Low laser power
       temperature.value = 25; // Optimal temp
       humidity.value = 50;    // Optimal humidity
       duration.value = 10;
@@ -213,6 +234,7 @@ const loadPreset = () => {
     case 'partial_frequency': // Aim for 0.1 <= success_rate < 0.9
       voltage.value = 2.0;    // Good voltage
       frequency.value = 15;   // Low frequency (OPF = 30, off from 80; also freq near boundary)
+      laserPower.value = 55;  // Medium-high laser power
       temperature.value = 26; // Slightly off optimal temp
       humidity.value = 75;    // Slightly off optimal humidity
       duration.value = 30;
@@ -220,6 +242,7 @@ const loadPreset = () => {
     case 'edge_low_voltage': // Aim for a score that is low but not necessarily a crash, to see corruption
       voltage.value = 0.8;    // Low voltage (base score 0.5)
       frequency.value = 60;   // OPF = 0.8 * 60 = 48 (off from 80)
+      laserPower.value = 40;  // Medium-low laser power
       temperature.value = 28; // Temp a bit high
       humidity.value = 40;    // Optimal humidity
       duration.value = 15;
@@ -228,6 +251,7 @@ const loadPreset = () => {
       // Optionally reset to some default if no preset or unknown preset is chosen
       voltage.value = 1.7;
       frequency.value = 50;
+      laserPower.value = 50;
       temperature.value = 25;
       humidity.value = 50;
       duration.value = 30;
@@ -255,6 +279,7 @@ defineExpose({
     // input_txt: character.value, // Removed - parent accesses character ref
     voltage_tension: parseFloat(voltage.value),
     frequency: parseFloat(frequency.value),
+    laser_power: parseFloat(laserPower.value),
     temperature: parseFloat(temperature.value),
     humidity: parseFloat(humidity.value),
     duration_sec: parseInt(duration.value)

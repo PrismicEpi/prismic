@@ -2,12 +2,15 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
 import ExperienceView from '@/views/ExperienceView.vue'
 import HistoriqueView from '@/views/HistoriqueView.vue'
+import ExperienceDetailView from '@/views/ExperienceDetailView.vue'
+
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/login', component: LoginView },
     { path: '/', component: ExperienceView, meta: { requiresAuth: true } },
     { path: '/historique', component: HistoriqueView, meta: { requiresAuth: true } },
+    { path: '/experience/:id', component: ExperienceDetailView, meta: { requiresAuth: true } },
   ],
 })
 

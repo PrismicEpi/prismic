@@ -1,5 +1,8 @@
 import { ExperimentModel } from '../models/experimentModel.js';
 import { v4 as uuidv4 } from 'uuid';
+import { spawn } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 // GET Methods
 export const getAllExperiments = async (req, res) => {
@@ -71,7 +74,77 @@ export const createExperiment = async (req, res) => {
         console.log("Data for createExperiment controller:", JSON.stringify(newExperimentData, null, 2));
 
         const experiment = await ExperimentModel.create(newExperimentData);
-        res.status(201).json(experiment);
+
+        // Generate report for the newly created experiment using R script directly
+        try {
+            const r = spawn('Rscript', ['src/report/generate_report.R', JSON.stringify({ experiment_id: experiment.experiment_id })]);
+            
+            let stdoutData = '';
+            
+            r.stdout.on('data', (data) => {
+                stdoutData += data.toString();
+            });
+            
+            r.stderr.on('data', (data) => {
+                console.error(`R Script stderr: ${data}`);
+            });
+            
+            r.on('close', async (code) => {
+                if (code === 0) {
+                    try {
+                        // Path to the generated PDF file
+                        const pdfPath = path.resolve(process.cwd(), 'src/report/report.pdf');
+                        
+                        // Check if PDF file exists
+                        if (fs.existsSync(pdfPath)) {
+                            // Read the PDF file as binary data
+                            const pdfBuffer = fs.readFileSync(pdfPath);
+                            
+                            // Save the PDF report to the experiment record
+                            await ExperimentModel.update(
+                                { 
+                                    report: pdfBuffer,
+                                    report_type: 'application/pdf' 
+                                },
+                                { where: { experiment_id: experiment.experiment_id } }
+                            );
+                            
+                            console.log(`PDF Report successfully saved for experiment ${experiment.experiment_id}`);
+                        } else {
+                            console.error(`PDF file not found at ${pdfPath}`);
+                            
+                            // If PDF not found, save the stdout as a text report
+                            await ExperimentModel.update(
+                                { 
+                                    report: Buffer.from(stdoutData, 'utf-8'),
+                                    report_type: 'text/plain' 
+                                },
+                                { where: { experiment_id: experiment.experiment_id } }
+                            );
+                        }
+                    } catch (updateError) {
+                        console.error('Error updating experiment with report:', updateError);
+                    }
+                } else {
+                    console.error(`R script process exited with code ${code}`);
+                    
+                    // Save error info as a text report
+                    await ExperimentModel.update(
+                        { 
+                            report: Buffer.from(`Report generation failed with code ${code}\n${stdoutData}`, 'utf-8'),
+                            report_type: 'text/plain' 
+                        },
+                        { where: { experiment_id: experiment.experiment_id } }
+                    );
+                }
+            });
+            
+            // Return the created experiment without waiting for the report to be generated
+            res.status(201).json(experiment);
+        } catch (reportError) {
+            console.error('Error spawning R script for report generation:', reportError);
+            res.status(201).json(experiment);
+        }
     } catch (error) {
         console.error('Error creating experiment in controller:', error);
         // It's also helpful to log the error details that Sequelize might provide

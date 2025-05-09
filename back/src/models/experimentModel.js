@@ -52,6 +52,10 @@ export const ExperimentModel = sequelize.define('ExperimentModel', {
         allowNull: true
     },
     report: {
+        type: DataTypes.BLOB,
+        allowNull: true
+    },
+    report_type: {
         type: DataTypes.TEXT,
         allowNull: true
     },

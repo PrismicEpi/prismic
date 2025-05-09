@@ -28,13 +28,13 @@
           <!-- Comparaison caractère -->
           <div class="bg-[#232631] p-4 rounded-lg">
             <div class="text-sm font-medium text-[#E2E8F0] mb-2">Caractère</div>
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center justify-start space-x-4">
               <div class="bg-[#1A1C23] p-3 rounded-lg text-center w-16">
                 <div class="text-xs text-[#E2E8F0] mb-1">Envoyé</div>
                 <div class="text-2xl font-bold text-white">{{ sentCharacter }}</div>
               </div>
-              <div v-if="!isExperimentActive">
-                <div class="text-[#7E3AF2]">→</div>
+              <div v-if="!isExperimentActive" class="flex items-center space-x-4">
+                <div class="text-[#7E3AF2] flex items-center h-full">→</div>
                 <div class="bg-[#1A1C23] p-3 rounded-lg text-center w-16">
                   <div class="text-xs text-[#E2E8F0] mb-1">Reçu</div>
                   <div class="text-2xl font-bold text-white">{{ receivedCharacter }}</div>
@@ -47,11 +47,19 @@
           <div class="bg-[#232631] p-4 rounded-lg">
             <div class="text-sm font-medium text-[#E2E8F0] mb-2">Taux de réussite</div>
             <div class="flex items-center justify-between">
-              <div class="text-3xl font-bold text-white">{{ successRate }}%</div>
+              <div class="text-3xl font-bold text-white">
+                <template v-if="isExperimentActive">
+                  <span class="text-gray-500">--</span>
+                </template>
+                <template v-else>
+                  {{ successRate }}%
+                </template>
+              </div>
               <div class="w-16 h-16 relative">
                 <svg class="w-full h-full" viewBox="0 0 36 36">
                   <circle cx="18" cy="18" r="16" fill="none" stroke="#1A1C23" stroke-width="2"></circle>
                   <circle 
+                    v-if="!isExperimentActive"
                     cx="18" 
                     cy="18" 
                     r="16" 
@@ -63,8 +71,11 @@
                     transform="rotate(-90 18 18)"
                   ></circle>
                 </svg>
-                <div class="absolute inset-0 flex items-center justify-center text-xs font-medium" :class="successRateTextColor">
+                <div v-if="!isExperimentActive" class="absolute inset-0 flex items-center justify-center text-xs font-medium" :class="successRateTextColor">
                   {{ successRateLabel }}
+                </div>
+                <div v-else class="absolute inset-0 flex items-center justify-center text-xs font-medium text-gray-500">
+                  En attente
                 </div>
               </div>
             </div>
@@ -83,18 +94,23 @@
         
         <!-- Boutons d'action -->
         <div class="flex flex-wrap gap-3 mt-6">
-          <button class="px-4 py-2 bg-[#232631] text-white rounded-md hover:bg-[#2D3748] focus:outline-none focus:ring-2 focus:ring-[#7E3AF2] flex items-center">
+          <button 
+            @click="downloadReport" 
+            :disabled="isDownloadDisabled" 
+            class="px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#7E3AF2] flex items-center"
+            :class="isDownloadDisabled ? 'bg-[#1a1c23] text-gray-500 cursor-not-allowed' : 'bg-[#232631] text-white hover:bg-[#2D3748]'"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
             Télécharger le rapport
           </button>
-          <button class="px-4 py-2 bg-[#232631] text-white rounded-md hover:bg-[#2D3748] focus:outline-none focus:ring-2 focus:ring-[#7E3AF2] flex items-center">
+          <!-- <button class="px-4 py-2 bg-[#232631] text-white rounded-md hover:bg-[#2D3748] focus:outline-none focus:ring-2 focus:ring-[#7E3AF2] flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             Voir dans l'historique
-          </button>
+          </button> -->
         </div>
       </div>
     </div>
@@ -135,8 +151,39 @@ const successRate = ref(0);
 // const retentionTime = ref(0); // Renamed/repurposed
 const configuredDuration = ref(0); // Store configured duration in seconds
 
-// Remove retentionPercentage computed property
-// const retentionPercentage = computed(() => { ... });
+// Computed property to determine if the download button should be disabled
+const isDownloadDisabled = computed(() => {
+  return !props.experimentDetails || props.isExperimentActive || !props.experimentDetails.experiment_id;
+});
+
+// Function to download the report
+const downloadReport = async () => {
+  if (isDownloadDisabled.value) return;
+  
+  try {
+    const experimentId = props.experimentDetails.experiment_id;
+    console.log(experimentId);
+    const response = await fetch(`https://prototype.prismic.fr/api/report/${experimentId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Error downloading report: ${response.statusText}`);
+    }
+    
+    // Handle the report file
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rapport-experience-${experimentId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  } catch (error) {
+    console.error('Failed to download report:', error);
+    // You might want to add toast notification here if you have a toast system
+  }
+};
 
 // Couleur du taux de réussite
 const successRateColor = computed(() => {

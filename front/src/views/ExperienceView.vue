@@ -109,9 +109,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <MainLayout>
+  <!-- <MainLayout> -->
     <div class="container mx-auto">
-      <h2 id="nouvelle-experience-title" class="text-2xl font-bold text-white mb-4">Nouvelle Expérience</h2>
+      <!-- <h2 id="nouvelle-experience-title" class="text-2xl font-bold text-white mb-4">Nouvelle Expérience</h2> -->
       <NewExperimentSection 
         ref="newExperimentSection" 
         @experiment-launched="handleExperimentLaunched"
@@ -126,6 +126,6 @@ onMounted(() => {
       
       <RecentExperimentsSection />
     </div>
-  </MainLayout>
+  <!-- </MainLayout> -->
 </template>
 

@@ -14,7 +14,12 @@ RUN apt-get update && \
     pandoc \
     libcurl4-openssl-dev \
     libssl-dev \
-    libxml2-dev && \
+    libxml2-dev \
+    texlive \
+    texlive-latex-extra \
+    texlive-fonts-recommended \
+    texlive-lang-french \
+    lmodern && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

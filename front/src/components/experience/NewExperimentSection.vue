@@ -184,7 +184,7 @@ const launchExperiment = async () => {
     input_txt: currentCharacter, // Add character to the payload
     user_email: userEmail,
     experiment_date_start: new Date().toISOString(),
-    status: "started",
+    status: "finished",
     graph_history: graphHistoryData,
     result_txt: finalResultText, // Use the calculated result text
     success_rate: parseFloat(calculatedSuccessRate.toFixed(4)), // Use the calculated success rate
