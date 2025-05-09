@@ -14,7 +14,7 @@ app.listen(PORT, async () => {
  * @return {array<InfectedMachine>} 200 - Success response - application/json
  * @return {object} 500 - Server error
  */
-app.get("/api/health-check", async (req, res) => {
+app.get("/api/health-checke", async (req, res) => {
     console.log("Health check");
     res.json("Hello World");
 });
