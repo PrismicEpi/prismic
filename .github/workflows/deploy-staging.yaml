@@ -15,8 +15,6 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     environment: staging
     runs-on: self-hosted
-    # Or, if you gave the runner a specific label:
-    # runs-on: [self-hosted, staging-runner]
 
     steps:
       - name: Checkout repository
@@ -28,6 +26,7 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}  # Provide the known_hosts value
 
       - name: Deploy to Server
         run: |
