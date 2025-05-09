@@ -51,12 +51,12 @@ jobs:
             # Ensure the directory exists
             mkdir -p /opt/prismic-staging/back/docker
 
-            # Copy .env to the server
-            cat /tmp/backend.env > /opt/prismic-staging/back/docker/.env
-
             # Copy all the code from github runner and put it
             # to a specific folder
             cd /opt/prismic-staging/back && rsync --delete -avz /opt/runner-prototype/_work/prismic/prismic/back/  .
+
+            # Copy .env to the server
+            cat /tmp/backend.env > /opt/prismic-staging/back/docker/.env
            
             # Start Docker Compose (Backend)
             cd /opt/prismic-staging/back/docker && docker compose -f compose.staging.yaml up -d
