@@ -57,6 +57,9 @@ jobs:
 
             # Copy .env to the server
             cat /tmp/backend.env > /opt/prismic-staging/back/docker/.env
+
+            # Copy .env.example to the server
+            cp /opt/prismic-staging/back/.env.example /opt/prismic-staging/back/.env
            
             # Start Docker Compose (Backend)
             cd /opt/prismic-staging/back/docker && docker compose -f compose.staging.yaml up -d
