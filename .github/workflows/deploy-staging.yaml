@@ -60,7 +60,11 @@ jobs:
             cat /tmp/backend.env > /opt/prismic-staging/back/docker/.env
 
             # Copy .env.example to the server
+<<<<<<< HEAD
             cat /tmp/backend.env /opt/prismic-staging/back/.env
+=======
+            cat /opt/prismic-staging/back/docker/.env /opt/prismic-staging/back/.env
+>>>>>>> 6d31a71 (fix(github-ci): Add authentik api url)
            
             # Start Docker Compose (Backend)
             cd /opt/prismic-staging/back/docker && docker compose -f compose.staging.yaml up -d

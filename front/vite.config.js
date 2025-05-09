@@ -9,7 +9,7 @@ import tailwind from 'tailwindcss'
 // https://vite.dev/config/
 export default defineConfig({
   server: {
-    allowedHosts: ['prototype.prismic.fr'],
+    allowedHosts: ['prototype.prismic.fr', 'prototype.staging.prismic.fr'],
     host: '0.0.0.0', // Bind to all network interfaces
     port: 5173, // Optional: Ensure the port matches your Dockerfile
   },

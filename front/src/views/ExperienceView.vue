@@ -4,6 +4,7 @@ import MainLayout from '@/components/layout/MainLayout.vue';
 import NewExperimentSection from '@/components/experience/NewExperimentSection.vue';
 import ResultsSection from '@/components/experience/ResultsSection.vue';
 import RecentExperimentsSection from '@/components/experience/RecentExperimentsSection.vue';
+import TourGuide from '@/components/common/TourGuide.vue';
 import { useToast } from 'vue-toastification';
 
 // Références aux composants
@@ -12,6 +13,7 @@ const newExperimentSection = ref(null);
 const experimentToShow = ref(null); // Holds details for ResultsSection
 const experimentCompletionTimer = ref(null); // Ref for the completion timer
 const toast = useToast();
+const tourGuideRef = ref(null); // Reference to the TourGuide component
 
 // Computed property for the current input character from ConfigurationCard
 const currentInputCharacter = computed(() => {
@@ -126,6 +128,9 @@ onMounted(() => {
       
       <RecentExperimentsSection />
     </div>
+    
+    <!-- Tour Guide Component -->
+    <TourGuide ref="tourGuideRef" />
   <!-- </MainLayout> -->
 </template>
 
