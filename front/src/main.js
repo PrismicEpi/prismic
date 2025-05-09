@@ -2,11 +2,15 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import './assets/index.css';
+import './assets/shepherd-custom.css'; // Import custom Shepherd.js tour guide styles
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
 import Toast, { POSITION } from "vue-toastification";
 import "vue-toastification/dist/index.css";
+
+// Import debug tools (they self-register to window)
+import './utils/debugTools.js';
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
