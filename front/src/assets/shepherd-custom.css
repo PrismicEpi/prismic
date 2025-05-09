@@ -1,0 +1,34 @@
+/* Dark theme styles for Shepherd.js */
+.shepherd-element {
+  background-color: #1A1C23 !important;
+  color: #E2E8F0 !important;
+  border: 1px solid #393E46 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+  z-index: 9999 !important;
+}
+
+.shepherd-text {
+  color: #E2E8F0 !important;
+}
+
+.shepherd-title {
+  color: white !important;
+}
+
+.shepherd-header {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+.shepherd-footer {
+  border-top: none !important;
+}
+
+.shepherd-arrow:before {
+  background-color: #1A1C23 !important;
+}
+
+.shepherd-modal-overlay-container {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+} 
