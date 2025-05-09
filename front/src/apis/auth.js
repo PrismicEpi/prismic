@@ -13,10 +13,27 @@ export async function authenticateUser(token) {
       const data = await response.json();
       return { ...data, status: 'ok' };
     } else {
-      return { status: 'false' };
+      let errorMessage = 'Authentication failed. Please check your token or try again.';
+      try {
+        const errorData = await response.json();
+        if (errorData.error && errorData.error.detail) {
+          errorMessage = errorData.error.detail;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (response.statusText && response.status !== 500) {
+          errorMessage = response.statusText;
+        }
+      } catch (e) {
+        if (response.statusText && response.status !== 500) {
+          errorMessage = response.statusText;
+        }
+      }
+      throw new Error(errorMessage);
     }
   } catch (error) {
     console.error('Error during authentication:', error);
+    // Re-throw the error to be caught by the caller (authStore.login)
+    // If it's a network error or error from the 'throw new Error(errorMessage)' above.
     throw error;
   }
 }
