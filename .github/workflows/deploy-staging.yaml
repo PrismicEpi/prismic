@@ -48,6 +48,14 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /opt/prismic-staging/back/docker"
           scp /tmp/backend.env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/prismic-staging/back/docker/.env #copy the file and rename it to .env
 
+      - name: Create .env for back
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /opt/prismic-staging/back/ && cp .env.example .env"
+
+      - name: Start Docker Compose (Backend)
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /opt/prismic-staging/back/docker && docker compose -f compose.staging.yaml up -d"
+
   deploy-front:
       # similar steps as deploy-back, but creates and deploys the front .env file
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
