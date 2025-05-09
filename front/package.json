@@ -20,11 +20,13 @@
     "pinia": "^3.0.1",
     "pinia-plugin-persistedstate": "^4.2.0",
     "radix-vue": "^1.9.15",
+    "shepherd.js": "^14.5.0",
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.7.3",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.0",
+    "vue-toastification": "2.0.0-rc.5"
   },
   "devDependencies": {
     "@types/node": "^22.13.4",
