@@ -11,7 +11,7 @@ on:
       - staging
 
 jobs:
-  deploy:
+  deploy-back:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     environment: staging
     runs-on: self-hosted
@@ -26,14 +26,42 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: ${{ secrets.KNOWN_HOSTS }}  # Provide the known_hosts value
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
 
-      - name: Deploy to Server
+      - name: Create .env for backend
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}"
-          rsync -avz --delete ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}
+          echo "BACKEND_API_KEY=${{ secrets.BACKEND_API_KEY }}" > /tmp/backend.env # Create a temporary file
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> /tmp/backend.env # Append more secrets
 
-      # Optional: Add steps to run build scripts, migrations, etc.
-      - name: Run Build Script
+      - name: Deploy Backend to Server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && npm install && npm run build"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /opt/prismic-staging/back/docker"
+          scp /tmp/backend.env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/prismic-staging/back/docker/.env #copy the file and rename it to .env
+
+  deploy-front:
+      # similar steps as deploy-back, but creates and deploys the front .env file
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    environment: staging
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+
+      - name: Create .env for front
+        run: |
+          echo "API_URL=${{ secrets.API_URL }}" > /tmp/front.env # Create a temporary file
+          echo "FRONT_URL=${{ secrets.FRONT_URL }}" >> /tmp/front.env # Append more secrets
+
+      - name: Deploy Front to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /opt/prismic-staging/front/docker"
+          scp /tmp/front.env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/prismic-staging/front/docker/.env #copy the file and rename it to .env
