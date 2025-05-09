@@ -38,6 +38,7 @@ jobs:
           echo "NC_ADMIN_EMAIL=${{ secrets.NC_ADMIN_EMAIL }}" >> /tmp/backend.env
           echo "NC_ADMIN_PASSWORD=${{ secrets.NC_ADMIN_PASSWORD }}" >> /tmp/backend.env
           echo "NC_DISABLE_CACHE=${{ secrets.NC_DISABLE_CACHE }}" >> /tmp/backend.env
+          echo "AUTHENTIK_BASE_URL=${{ secrets.AUTHENTIK_BASE_URL }}" >> /tmp/backend.env
 
       - name: Deploy Backend to Server and Restart Docker
         run: |
