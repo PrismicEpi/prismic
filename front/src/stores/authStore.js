@@ -28,14 +28,23 @@ export const useAuthStore = defineStore('auth', {
 
     // TODO : Gérer les erreurs
     async login(token) {
-      console.log('login', token);
-      const response = await authenticateUser(token);
-      console.log('response', response);
-      if (response.status === 'ok') {
-        this.setToken(token);
+      try {
+        console.log('login action with token:', token);
+        const responseData = await authenticateUser(token); // Expected to throw on failure
+        
+        // If authenticateUser resolves without error, it means responseData.status is 'ok'
+        // and responseData contains user details.
+        console.log('Authentication successful, response data:', responseData);
+        
+        this.setToken(token); // The original Firebase token
+        const { userName, email, avatar } = responseData;
+        this.setUser({ userName, email, avatar });
         router.push('/');
-      } else {
-        console.log('error', response);
+        
+      } catch (error) {
+        console.error('Login action failed in authStore:', error.message);
+        // Re-throw the error so the component can catch it and display it
+        throw error; 
       }
     },
 

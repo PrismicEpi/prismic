@@ -7,6 +7,7 @@ import { swaggerOptions } from "./config/swagger.js";
 // import keystroke from "./routes/keystrokeRoute.js";
 import authRoute from "./routes/authRoute.js";
 import experimentRoute from "./routes/experimentRoute.js";
+import reportRoute from "./routes/reportRoute.js";
 const app = express();
 
 // app.use(authMiddleware);
@@ -31,5 +32,6 @@ expressJSDocSwagger(app)(swaggerOptions);
 // Routes
 app.use("/api", authRoute);
 app.use("/api", experimentRoute)
+app.use("/api", reportRoute)
 
 export default app;

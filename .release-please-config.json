@@ -4,6 +4,11 @@
       "release-type": "node",
       "changelog-path": "front/CHANGELOG.md",
       "package-name": "prismic-prototype-front"
+    },
+    "back": {
+      "release-type": "node", 
+      "changelog-path": "back/CHANGELOG.md",
+      "package-name": "prismic-prototype-back"
     }
   }
 }
