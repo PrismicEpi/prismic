@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/PrismicEpi/prismic/compare/prismic-prototype-front-v1.0.1...prismic-prototype-front-v1.1.0) (2025-05-09)
+
+
+### Features
+
+* **walkthrourh:** Using shepherdJs add a presentation of the prototype ([d9d2994](https://github.com/PrismicEpi/prismic/commit/d9d2994f8797ab855430d30c9dbd87fca8a2e5f8))
+* **walkthrourh:** Using shepherdJs add a presentation of the prototype ([344e098](https://github.com/PrismicEpi/prismic/commit/344e09881a329b7438c4653a0b335d51231a1775))
+
 ## [1.0.1](https://github.com/PrismicEpi/prismic/compare/prismic-prototype-front-v1.0.0...prismic-prototype-front-v1.0.1) (2025-05-09)
 
 
