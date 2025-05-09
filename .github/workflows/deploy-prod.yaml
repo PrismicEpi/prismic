@@ -1,16 +1,16 @@
-name: Deploy to Staging
+name: Deploy to Production
 
 on:
   pull_request:
     types:
       - closed
     branches:
-      - staging
+      - master
 
 jobs:
   deploy-back:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
-    environment: staging
+    environment: prod
     runs-on: self-hosted
     steps:
       - name: Checkout repository
@@ -43,28 +43,28 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             # Stop existing containers (ignore errors if they don't exist):
-            cd /opt/prismic-staging/back/docker && docker compose -f compose.staging.yaml down || true
+            cd /opt/prismic-prod/back/docker && docker compose -f compose.prod.yaml down || true
 
             # Ensure the directory exists
-            mkdir -p /opt/prismic-staging/back/docker
+            mkdir -p /opt/prismic-prod/back/docker
 
             # Copy all the code from github runner and put it
             # to a specific folder
-            cd /opt/prismic-staging/back && rsync --delete -avz /opt/runner-prototype/_work/prismic/prismic/back/  .
+            cd /opt/prismic-prod/back && rsync --delete -avz /opt/runner-prototype/_work/prismic/prismic/back/  .
 
             # Copy .env to the server
-            cat /tmp/backend.env > /opt/prismic-staging/back/docker/.env
+            cat /tmp/backend.env > /opt/prismic-prod/back/docker/.env
 
             # Copy .env.example to the server
-            cp /opt/prismic-staging/back/.env.example /opt/prismic-staging/back/.env
+            cp /opt/prismic-prod/back/.env.example /opt/prismic-prod/back/.env
            
             # Start Docker Compose (Backend)
-            cd /opt/prismic-staging/back/docker && docker compose -f compose.staging.yaml up -d
+            cd /opt/prismic-prod/back/docker && docker compose -f compose.prod.yaml up -d
           EOF
 
   deploy-front:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
-    environment: staging
+    environment: prod
     runs-on: self-hosted
     steps:
       - name: Checkout repository
@@ -93,21 +93,21 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             # Stop existing containers (ignore errors if they don't exist):
-            cd /opt/prismic-staging/front/docker && docker compose -f compose.staging.yaml down || true
+            cd /opt/prismic-prod/front/docker && docker compose -f compose.prod.yaml down || true
 
             # Ensure the directory exists
-            mkdir -p /opt/prismic-staging/front/docker
+            mkdir -p /opt/prismic-prod/front/docker
 
             # Copy all the code from github runner and put it
             # to a specific folder
-            cd /opt/prismic-staging/front && rsync --delete -avz /opt/runner-prototype/_work/prismic/prismic/front/  .
+            cd /opt/prismic-prod/front && rsync --delete -avz /opt/runner-prototype/_work/prismic/prismic/front/  .
 
             # Copy .env to the server
-            cat /tmp/front-docker.env > /opt/prismic-staging/front/docker/.env
+            cat /tmp/front-docker.env > /opt/prismic-prod/front/docker/.env
 
             # .env for the front
-            cp /tmp/front.env /opt/prismic-staging/front/.env
+            cp /tmp/front.env /opt/prismic-prod/front/.env
            
             # Start Docker Compose (Backend)
-            cd /opt/prismic-staging/front/docker && docker compose -f compose.staging.yaml up -d
+            cd /opt/prismic-prod/front/docker && docker compose -f compose.prod.yaml up -d
           EOF
