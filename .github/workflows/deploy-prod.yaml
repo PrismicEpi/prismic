@@ -93,7 +93,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             # Stop existing containers (ignore errors if they don't exist):
-            cd /opt/prismic-prod/front/docker && docker compose -f compose.prod.yaml down || true
+            cd /opt/prismic-prod/front/docker && docker compose -f compose.yaml down || true
 
             # Ensure the directory exists
             mkdir -p /opt/prismic-prod/front/docker
@@ -109,5 +109,5 @@ jobs:
             cp /tmp/front.env /opt/prismic-prod/front/.env
            
             # Start Docker Compose (Backend)
-            cd /opt/prismic-prod/front/docker && docker compose -f compose.prod.yaml up -d
+            cd /opt/prismic-prod/front/docker && docker compose -f compose.yaml up -d
           EOF
