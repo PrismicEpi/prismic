@@ -56,7 +56,7 @@ jobs:
 
             # Copy all the code from github runner and put it
             # to a specific folder
-            cd /opt/prismic-staging/back && rsync --delete -avz /opt/runner-prototype/_work/prismic/prismic/back  .
+            cd /opt/prismic-staging/back && rsync --delete -avz /opt/runner-prototype/_work/prismic/prismic/back/  .
            
             # Start Docker Compose (Backend)
             cd /opt/prismic-staging/back/docker && docker compose -f compose.staging.yaml up -d
