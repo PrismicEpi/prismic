@@ -65,9 +65,10 @@ const calculateDuration = (startDate, endDate) => {
 const fetchExperimentDetails = async () => {
   loading.value = true;
   error.value = null;
+  const apiUrl = import.meta.env.VITE_API_BASE_URL;
   
   try {
-    const response = await fetch('https://prototype.prismic.fr/api/experiments');
+    const response = await fetch(`${apiUrl}/experiments`);
 
     console.log(response);
     

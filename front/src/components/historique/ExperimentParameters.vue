@@ -7,6 +7,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 </script>
 
 <template>
@@ -94,7 +96,7 @@ const props = defineProps({
           <!-- PDF Viewer -->
           <div v-if="experiment.rawData?.report_type === 'application/pdf'" class="w-full">
             <iframe 
-              :src="`https://prototype.prismic.fr/api/report/${experiment.id}`" 
+              :src="`${apiBaseUrl}/report/${experiment.id}`" 
               class="w-full h-[600px] border-0 rounded" 
               title="Rapport d'expérience"
             ></iframe>
@@ -102,7 +104,7 @@ const props = defineProps({
             <!-- Download button -->
             <div class="mt-4 flex justify-end">
               <a 
-                :href="`https://prototype.prismic.fr/api/report/${experiment.id}`" 
+                :href="`${apiBaseUrl}/report/${experiment.id}`" 
                 target="_blank" 
                 class="px-4 py-2 bg-[#7E3AF2] text-white rounded-md hover:bg-[#6C2BD9] transition-colors focus:outline-none focus:ring-2 focus:ring-[#7E3AF2] flex items-center"
               >

@@ -159,11 +159,12 @@ const isDownloadDisabled = computed(() => {
 // Function to download the report
 const downloadReport = async () => {
   if (isDownloadDisabled.value) return;
+  const apiUrl = import.meta.env.VITE_API_BASE_URL;
   
   try {
     const experimentId = props.experimentDetails.experiment_id;
     console.log(experimentId);
-    const response = await fetch(`https://prototype.prismic.fr/api/report/${experimentId}`);
+    const response = await fetch(`${apiUrl}/report/${experimentId}`);
     
     if (!response.ok) {
       throw new Error(`Error downloading report: ${response.statusText}`);

@@ -36,9 +36,10 @@ const formatDate = (dateString) => {
 const fetchExperiments = async () => {
   loading.value = true;
   error.value = null;
+  const apiUrl = import.meta.env.VITE_API_BASE_URL;
   
   try {
-    const response = await fetch('https://prototype.prismic.fr/api/experiments');
+    const response = await fetch(`${apiUrl}/experiments`);
     
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`);
