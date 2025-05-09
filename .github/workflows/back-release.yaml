@@ -1,0 +1,33 @@
+name: Release Backend
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - master
+    paths:
+      - 'back/**'
+      - '.github/workflows/back-release.yml'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  release-back:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Important: Release Please needs the full history
+      - name: Run release-please
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
