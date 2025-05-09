@@ -81,11 +81,16 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.KNOWN_HOSTS }}
 
+      - name: Create .env for front-docker
+        run: |
+          echo "CERT_RESOLVER=${{ secrets.CERT_RESOLVER }}" > /tmp/front-docker.env
+          echo "TRAEFIK_NETWORK=${{ secrets.TRAEFIK_NETWORK }}" >> /tmp/front-docker.env
+          echo "APEX_DOMAIN=${{ secrets.APEX_DOMAIN }}" >> /tmp/front-docker.env
+
       - name: Create .env for front
         run: |
-          echo "CERT_RESOLVER=${{ secrets.CERT_RESOLVER }}" > /tmp/front.env
-          echo "TRAEFIK_NETWORK=${{ secrets.TRAEFIK_NETWORK }}" >> /tmp/front.env
-          echo "APEX_DOMAIN=${{ secrets.APEX_DOMAIN }}" >> /tmp/front.env
+          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > /tmp/front.env
+          echo "VITE_AUTH_SECRET=${{ secrets.VITE_AUTH_SECRET }}" >> /tmp/front.env
 
       - name: Deploy Front to Server and Restart Docker
         run: |
@@ -101,10 +106,10 @@ jobs:
             cd /opt/prismic-staging/front && rsync --delete -avz /opt/runner-prototype/_work/prismic/prismic/front/  .
 
             # Copy .env to the server
-            cat /tmp/front.env > /opt/prismic-staging/front/docker/.env
+            cat /tmp/front-docker.env > /opt/prismic-staging/front/docker/.env
 
-            # Copy .env.example to the server
-            cp /opt/prismic-staging/front/.env.example /opt/prismic-staging/front/.env
+            # .env for the front
+            cp /tmp/front.env /opt/prismic-staging/front/.env
            
             # Start Docker Compose (Backend)
             cd /opt/prismic-staging/front/docker && docker compose -f compose.staging.yaml up -d
