@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/PrismicEpi/prismic/compare/prismic-prototype-back-v1.0.0...prismic-prototype-back-v1.0.1) (2025-05-09)
+
+
+### Features
+
+* **connection:** Back and front connected ([b7a6e08](https://github.com/PrismicEpi/prismic/commit/b7a6e08b5ec959d47a11251a376044a48257f017))
+
 ## 1.0.0 (2025-05-09)
 
 
