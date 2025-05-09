@@ -87,7 +87,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            Télécharger
+            Télécharger le rapport
           </button>
           <button class="px-4 py-2 bg-[#232631] text-white rounded-md hover:bg-[#2D3748] focus:outline-none focus:ring-2 focus:ring-[#7E3AF2] flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -162,24 +162,101 @@ const successRateLabel = computed(() => {
 // --- Graph Generation Logic ---
 // (Moved before the watcher)
 const generateSignalData = (character, length = 100) => {
-  const emptyData = Array(length).fill(0);
-  if (!character || character.length !== 1) return emptyData;
+    const emptyData = Array(length).fill(0);
+    // Ensure it's a single Latin alphabet character
+    if (!character || character.length !== 1 || !/^[a-zA-Z]$/.test(character)) {
+        return emptyData;
+    }
 
-  const baseShape = [0, 5, 15, 25, 30, 25, 15, 5, 0]; // Simple peak shape
-  const baseLength = baseShape.length;
-  const repeatCount = Math.floor(length / baseLength);
-  const charCode = character.charCodeAt(0);
-  const scale = 1 + ((charCode - 65) % 26) * 0.02; // Scale amplitude slightly
-  const variance = ((charCode * 7) % 10) * 0.05; // Add noise
+    const charUpper = character.toUpperCase();
+    const charCode = charUpper.charCodeAt(0);
+    const index = charCode - 65; // 0 for A, 1 for B, ..., 25 for Z
 
-  let signal = [];
-  for (let r = 0; r < repeatCount; r++) {
-      signal = signal.concat(baseShape.map(v => Math.max(0, v * scale + (Math.random() - 0.5) * variance * v)));
-  }
-  // Fill remaining points
-  signal = signal.concat(Array(length - signal.length).fill(0));
+    // Define a few base pulse shapes
+    const basePulses = [
+        [0, 2, 5, 8, 10, 8, 5, 2, 0],       // Rounded Peak
+        [0, 10, 0, 10, 0, 10, 0],           // Triple Sharp Peaks
+        [0, 3, 3, 10, 10, 3, 3, 0],         // Broader Plateau Peak
+        [0, 8, 2, 10, 2, 8, 0],           // W-shape / Double Dip Peak
+        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0] // Long Triangle
+    ];
 
-  return signal;
+    // --- Parameters derived from character index for more distinction ---
+    const selectedPulseShape = basePulses[index % basePulses.length];
+    
+    // Number of major pulse events in the signal
+    const numPulseEvents = (index % 3) + 2; // Results in 2, 3, or 4 major events
+
+    // Amplitude multiplier: make letters have more distinct heights
+    // Use a wider range and more steps for amplitude variation
+    const amplitudeMultiplier = 0.5 + ((index * 7) % 15) * 0.1; // Range roughly 0.5 to 1.9
+
+    // Phase shift for the whole signal (offsetting the start)
+    const phaseShiftPoints = (index % 6); // 0 to 5 points initial shift
+
+    let signal = Array(length).fill(0);
+    
+    // Calculate available space for each pulse event, considering number of events
+    const eventZoneLength = Math.floor((length - phaseShiftPoints) / numPulseEvents);
+
+    // If zones are too small for the selected pulse, we might simplify or stretch/compress pulse
+    // For now, if too small, it might truncate or overlap; robust handling can be complex.
+    // Let's ensure selectedPulseShape is not longer than eventZoneLength, if so, it will be truncated.
+
+    let currentSignalPosition = phaseShiftPoints;
+
+    for (let p = 0; p < numPulseEvents; p++) {
+        // Determine actual start for this pulse instance
+        // Basic placement: start of the zone. Centering or more complex placement can be added.
+        const pulseActualStart = currentSignalPosition;
+
+        for (let i = 0; i < selectedPulseShape.length; i++) {
+            const signalIndex = pulseActualStart + i;
+            if (signalIndex < length && signalIndex >= phaseShiftPoints) { // Stay within bounds
+                // Apply base value, then scale. Max height of base pulses is 10.
+                signal[signalIndex] += selectedPulseShape[i] * amplitudeMultiplier;
+            }
+        }
+        currentSignalPosition += eventZoneLength;
+    }
+    
+    // Add some minor, character-specific, consistent "texture" or "noise"
+    // This noise is not random, but derived, so 'A' always has same texture.
+    const textureSeed = (index * 3) % 11; // Yet another derivation
+    signal = signal.map((val, i) => {
+        let texturedValue = val;
+        if (i > phaseShiftPoints) { // Apply texture after phase shift
+            // Simple periodic variation based on textureSeed
+            const variation = Math.sin( (i * Math.PI * 2 * ((textureSeed + 1) * 0.05)) ) * ( ( (textureSeed + index) % 3 + 1) * 0.05 * val );
+            texturedValue += variation;
+        }
+        // Clamp final values to a reasonable display range (e.g., 0-30, adjust as needed)
+        return Math.max(0, Math.min(25, texturedValue)); // Max value 25 for chart
+    });
+
+    return signal;
+};
+
+// --- Function to generate a corrupted version of a signal ---
+const generateCorruptedSignalData = (originalSignal, corruptionFactor = 0.3) => {
+  if (!originalSignal || originalSignal.length === 0) return [];
+  return originalSignal.map(value => {
+    // Add random noise (scaled by corruptionFactor and original value)
+    let corruptedValue = value + (Math.random() - 0.5) * value * corruptionFactor * 2;
+    
+    // Chance to significantly attenuate or spike a point
+    if (Math.random() < corruptionFactor * 0.5) { // More likely if corruptionFactor is high
+      corruptedValue *= (Math.random() > 0.5 ? (1 + corruptionFactor) : (1 - corruptionFactor));
+    }
+
+    // Chance to flatten a point (simulate signal drop)
+    if (Math.random() < corruptionFactor * 0.3) {
+      corruptedValue *= Math.random() * 0.5; // Reduce to 0-50% of its value
+    }
+    
+    // Ensure value stays within a reasonable range (e.g., 0-30, matching generateSignalData's scale)
+    return Math.max(0, Math.min(25, corruptedValue));
+  });
 };
 
 // Chart initialization function (Moved before watcher)
@@ -216,7 +293,7 @@ const initializeChart = (canvasRef, chartVarName, label, data, borderColor, bgCo
 };
 
 // Function to update or create graphs (Moved before watcher)
-const updateGraphs = (inputChar, resultChar) => {
+const updateGraphs = (inputChar, resultChar, currentSuccessRate) => {
     const encodedData = generateSignalData(inputChar);
     
     let decodedData;
@@ -224,9 +301,15 @@ const updateGraphs = (inputChar, resultChar) => {
         // If an experiment is currently active, decoded signal data should be effectively empty.
         decodedData = generateSignalData(null); // generateSignalData(null) produces an array of zeros
     } else {
-        // If no experiment is active (i.e., it's finished or never started),
-        // use the resultChar from props.experimentDetails.
-        decodedData = generateSignalData(resultChar);
+        // Experiment is finished
+        if (currentSuccessRate !== undefined && currentSuccessRate < 0.7) {
+            // Failure case: generate corrupted signal based on the original encoded signal
+            decodedData = generateCorruptedSignalData(encodedData);
+        } else {
+            // Success or undefined success rate (treat as success for display):
+            // use the resultChar from props.experimentDetails.
+            decodedData = generateSignalData(resultChar);
+        }
     }
 
     // Update encoded chart
@@ -257,10 +340,11 @@ watch(() => [props.experimentDetails, props.isExperimentActive], ([newDetails, n
         sentCharacter.value = newDetails.input_txt || '-';
         // Display receivedCharacter based on newDetails, visibility handled by v-if tied to isExperimentActive
         receivedCharacter.value = newDetails.result_txt !== null ? (newDetails.result_txt || '?') : '-'; 
-        successRate.value = newDetails.success_rate !== null ? Math.round(newDetails.success_rate * 100) : 0; 
+        const currentSuccessRate = newDetails.success_rate; // Store for clarity
+        successRate.value = currentSuccessRate !== null ? Math.round(currentSuccessRate * 100) : 0; 
         configuredDuration.value = newDetails.duration_sec || 0;
         
-        updateGraphs(newDetails.input_txt, newDetails.result_txt);
+        updateGraphs(newDetails.input_txt, newDetails.result_txt, currentSuccessRate); // Pass success rate
 
     } else {
         // Reset if experimentDetails becomes null
@@ -269,7 +353,7 @@ watch(() => [props.experimentDetails, props.isExperimentActive], ([newDetails, n
         successRate.value = 0;
         // retentionTime.value = 0; // Removed
         configuredDuration.value = 0;
-        updateGraphs(null, null); // This will ensure decodedData is empty via the logic in updateGraphs
+        updateGraphs(null, null, undefined); // Pass undefined success rate
     }
 }, { immediate: true, deep: true }); // immediate for initial run, deep for object changes in experimentDetails
 
@@ -285,21 +369,22 @@ onMounted(() => {
         // respecting the isExperimentActive state for the decoded chart.
         const details = props.experimentDetails;
         if (details) {
+            const currentSuccessRate = details.success_rate;
             if (!encodedChart && encodedSignalCanvas.value) {
                 // console.log('[ResultsSection] Re-init encoded in nextTick');
-                updateGraphs(details.input_txt, details.result_txt); // Call once, updateGraphs handles both
+                updateGraphs(details.input_txt, details.result_txt, currentSuccessRate); // Call once, updateGraphs handles both
             } else if (!decodedChart && decodedSignalCanvas.value) {
                 // console.log('[ResultsSection] Re-init decoded in nextTick');
-                updateGraphs(details.input_txt, details.result_txt); // Call once, updateGraphs handles both
+                updateGraphs(details.input_txt, details.result_txt, currentSuccessRate); // Call once, updateGraphs handles both
             } else {
                 // If charts exist, an update might still be needed if watcher didn't catch initial state perfectly.
                 // However, the watcher with immediate:true and deep:true should be quite robust.
                 // console.log('[ResultsSection] Charts likely initialized by watcher, or conditions not met for re-init in nextTick.');
-                 updateGraphs(details.input_txt, details.result_txt); // A final safety update call
+                 updateGraphs(details.input_txt, details.result_txt, currentSuccessRate); // A final safety update call
             }
         } else {
             // console.log('[ResultsSection] No experimentDetails in nextTick, ensuring graphs are cleared.');
-            updateGraphs(null, null); // Ensure graphs are cleared if no details
+            updateGraphs(null, null, undefined); // Ensure graphs are cleared if no details
         }
     });
 });

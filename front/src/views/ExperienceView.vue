@@ -25,7 +25,7 @@ const isExperimentActive = computed(() => {
 
 // Function called when NewExperimentSection emits 'experiment-launched'
 const handleExperimentLaunched = (details) => {
-  console.log('Experiment launched, details received by view:', details);
+  // console.log('Experiment launched, details received by view:', details);
   
   // Clear any existing timer
   if (experimentCompletionTimer.value) {
@@ -44,7 +44,7 @@ const handleExperimentLaunched = (details) => {
   // Set a timer to mark the experiment as completed after its duration
   if (details.duration_sec && details.duration_sec > 0) {
     experimentCompletionTimer.value = setTimeout(() => {
-      console.log(`Experiment ${details.experiment_id} duration finished.`);
+      // console.log(`Experiment ${details.experiment_id} duration finished.`);
       handleExperimentCompleted();
     }, details.duration_sec * 1000);
   }
@@ -87,16 +87,16 @@ const handleExperimentCompleted = (stoppedByUser = false) => {
     
     // TODO: Optionally call backend PATCH /api/experiment here to update the record
     // with the final status and experiment_date_end. For now, only frontend state is updated.
-    console.log('Experiment marked as completed/stopped in view state:', experimentToShow.value);
+    // console.log('Experiment marked as completed/stopped in view state:', experimentToShow.value);
 
   } else {
-      console.log("Experiment completion/stop triggered, but no experiment data to update.");
+      // console.log("Experiment completion/stop triggered, but no experiment data to update.");
   }
 };
 
 // Function called when NewExperimentSection emits 'experiment-stopped'
 const handleExperimentStopped = () => {
-  console.log("Experiment stop requested by user.");
+  // console.log("Experiment stop requested by user.");
   handleExperimentCompleted(true); // Mark as completed but indicate it was stopped
 };
 

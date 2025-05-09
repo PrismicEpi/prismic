@@ -65,20 +65,15 @@ const toast = useToast();
 // Watch the exposed character ref from ConfigurationCard
 watch(() => configCard.value?.character, (newChar) => {
   if (newChar && visualizationCard.value) {
-    console.log('[NewExpSection] Character changed, updating expected signal:', newChar);
     visualizationCard.value.updateExpectedSignal(newChar);
   }
 }, { immediate: false }); // Don't run immediately on mount, wait for user changes
 
 // Watch for status changes from VisualizationCard to understand button states
 watch(() => visualizationCard.value?.status, (newStatus, oldStatus) => {
-  console.log(`[NewExpSection] VisualizationCard status changed from ${oldStatus} to ${newStatus}`);
-  console.log(`[NewExpSection] Current isLaunching: ${isLaunching.value}`);
   // Log button disabled states for clarity
   const launchButtonDisabled = isLaunching.value || newStatus === 'running';
   const stopButtonDisabled = newStatus !== 'running' || isLaunching.value;
-  console.log(`[NewExpSection] Launch button disabled: ${launchButtonDisabled} (isLaunching: ${isLaunching.value}, status: ${newStatus})`);
-  console.log(`[NewExpSection] Stop button disabled: ${stopButtonDisabled} (isLaunching: ${isLaunching.value}, status: ${newStatus})`);
 });
 
 // --- Success Rate Calculation Logic ---
@@ -134,9 +129,6 @@ const determineResultText = (inputTxt, successRate) => {
 // --- End of Success Rate Calculation Logic ---
 
 const launchExperiment = async () => {
-  console.log('[NewExpSection] launchExperiment called.');
-  console.log('[NewExpSection] Current visualizationCard status:', visualizationCard.value?.status);
-  console.log('[NewExpSection] Current isLaunching:', isLaunching.value);
   if (!configCard.value || !visualizationCard.value) {
     console.error('Configuration or Visualization card not available');
     toast.error('Erreur interne: Composants de configuration non disponibles.');
@@ -198,11 +190,10 @@ const launchExperiment = async () => {
     success_rate: parseFloat(calculatedSuccessRate.toFixed(4)), // Use the calculated success rate
   };
 
-  console.log('Launching experiment with data:', JSON.stringify(experimentData, null, 2));
+  console.log('Experiment Data to be sent (includes graph_history):', JSON.stringify(experimentData, null, 2));
 
   try {
     const result = await createExperimentApi(experimentData);
-    console.log('[NewExpSection] Experiment API call successful:', result);
     // Use result (which includes the DB generated ID) if needed
     const launchedExperimentDetails = {
         ...experimentData, // Include all calculated data sent
@@ -213,7 +204,6 @@ const launchExperiment = async () => {
 
     if (visualizationCard.value) {
       visualizationCard.value.setStatus('running');
-      console.log('[NewExpSection] Set visualizationCard status to "running"');
     }
     toast.success("Expérience lancée avec succès!");
   } catch (error) {
@@ -221,20 +211,15 @@ const launchExperiment = async () => {
     toast.error(`Erreur: ${error.message || 'Impossible de lancer l\'expérience.'}`);
     if (visualizationCard.value) {
       visualizationCard.value.setStatus('error');
-      console.log('[NewExpSection] Set visualizationCard status to "error"');
     }
   } finally {
     isLaunching.value = false;
-    console.log('[NewExpSection] isLaunching set to false.');
   }
 };
 
 const stopExperiment = () => {
-  console.log('[NewExpSection] stopExperiment called.');
-  console.log('[NewExpSection] Current visualizationCard status:', visualizationCard.value?.status);
   if (visualizationCard.value) {
     visualizationCard.value.setStatus('idle');
-    console.log('[NewExpSection] Set visualizationCard status to "idle"');
   }
   emit('experiment-stopped'); // Emit stop event
   toast.info("Visualisation de l'expérience arrêtée.");

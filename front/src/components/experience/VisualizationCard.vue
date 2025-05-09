@@ -54,7 +54,22 @@
       <!-- Données des capteurs -->
       <div class="grid grid-cols-2 gap-4">
         <div class="bg-[#232631] p-3 rounded-lg">
-          <div class="text-sm font-medium text-[#E2E8F0] mb-1">Stabilité</div>
+          <div class="text-sm font-medium text-[#E2E8F0] mb-1 flex items-center relative">
+            Stabilité
+            <div 
+              @mouseenter="showStabilityTooltip = true"
+              @mouseleave="showStabilityTooltip = false"
+              class="ml-2 w-4 h-4 bg-gray-500 rounded-full flex items-center justify-center cursor-help text-xs text-white"
+            >
+              ?
+            </div>
+            <div 
+              v-if="showStabilityTooltip"
+              class="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 p-2 bg-[#2D3748] text-white text-xs rounded shadow-lg w-64 z-10"
+            >
+              La stabilité est calculée en fonction de l'écart par rapport à la fréquence optimale de 50Hz. Une déviation de ±20% est tolérée. Au-delà, le score de stabilité diminue.
+            </div>
+          </div>
           <div class="text-xl font-bold text-white">{{ stability }}%</div>
         </div>
         <div class="bg-[#232631] p-3 rounded-lg">
@@ -81,6 +96,22 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import Chart from 'chart.js/auto';
+
+// Ref for tooltip visibility
+const showStabilityTooltip = ref(false);
+
+const MAX_LIVE_DATA_POINTS = 50; // Maximum points to display on the live chart
+
+// Temperature Management
+const BASE_TEMPERATURE = 25.0;
+const OVERHEAT_THRESHOLD = 27.0;
+const COOLDOWN_COMPLETE_THRESHOLD = 28.0;
+const COOLING_RATE = 0.2; // Degrees per second
+const COOLING_INTERVAL_MS = 1000;
+
+const isOverheated = ref(false);
+const isCooling = ref(false);
+const coolingIntervalId = ref(null);
 
 // Références pour les canvas
 const chartCanvas = ref(null);
@@ -156,8 +187,13 @@ const generateHistoryGraphDataset = () => {
   const dataLength = 50; 
   const historyData = [];
   for (let i = 0; i < dataLength; i++) {
-    // Generate stable points based on current config
-    historyData.push(simulateReceivedIntensityPoint(currentConfigVoltage.value, currentConfigFrequency.value));
+    // Generate stable points based on current config, but with fluctuating frequency
+    const baseFreq = currentConfigFrequency.value;
+    // Fluctuation range, increased to +/- 25% of baseFreq
+    const freqFluctuation = (Math.random() - 0.5) * (baseFreq * 0.50); 
+    const simulatedFluctuatingFreq = baseFreq + freqFluctuation;
+
+    historyData.push(simulateReceivedIntensityPoint(currentConfigVoltage.value, simulatedFluctuatingFreq));
   }
   return historyData;
 };
@@ -281,21 +317,35 @@ onMounted(() => {
 // Fonction pour mettre à jour les données en temps réel
 const updateChartData = () => {
   if (mainChart && status.value === 'running') {
-    // Update live chart data refs
-    liveChartDataPoints.value.shift();
-    liveChartDataPoints.value.push(simulateReceivedIntensityPoint(currentConfigVoltage.value, currentConfigFrequency.value));
-    
-    liveChartLabels.value.shift();
-    // Ensure labels are simple incrementing numbers for the window
-    liveChartLabels.value.push(liveChartLabels.value.length > 0 ? liveChartLabels.value[liveChartLabels.value.length - 1] + 1 : 1);
+    const baseFreq = currentConfigFrequency.value;
+    const freqFluctuation = (Math.random() - 0.5) * (baseFreq * 0.50); 
+    const simulatedFluctuatingFreq = baseFreq + freqFluctuation;
 
+    const newPoint = simulateReceivedIntensityPoint(currentConfigVoltage.value, simulatedFluctuatingFreq);
+    const newLabel = duration.value; // Use current duration (time in seconds)
+
+    if (liveChartDataPoints.value.length >= MAX_LIVE_DATA_POINTS) {
+        liveChartDataPoints.value.shift();
+        liveChartLabels.value.shift();
+    }
+    liveChartDataPoints.value.push(newPoint);
+    liveChartLabels.value.push(newLabel);
+    
     mainChart.update();
     
-    stability.value = parseFloat((calculateFrequencyScore(currentConfigFrequency.value) * 100).toFixed(1));
-    duration.value = (duration.value + 1);
-    temperature.value = parseFloat((temperature.value + 0.1).toFixed(1)); // Increment temperature
+    const currentFrequencyScore = calculateFrequencyScore(simulatedFluctuatingFreq);
+    stability.value = parseFloat((currentFrequencyScore * 100).toFixed(1));
+    
+    // Increment duration AFTER using it as a label for the current point
+    duration.value = duration.value + 1; 
+    temperature.value = parseFloat((temperature.value + COOLING_RATE / 2).toFixed(1)); // Slower heat up for demo or adjust rate
 
-    // Update timeline progress
+    // Check for overheating during experiment
+    if (temperature.value >= OVERHEAT_THRESHOLD && !isOverheated.value) {
+      isOverheated.value = true;
+      // console.log("[VisCard] System Overheated!");
+    }
+
     if (currentConfigDuration.value > 0) {
       timelineProgress.value = Math.min(100, (duration.value / currentConfigDuration.value) * 100);
     } else {
@@ -306,72 +356,108 @@ const updateChartData = () => {
 
 // Observer les changements d'état
 watch(status, (newStatus, oldStatus) => {
-  console.log(`[VisCard] Status changed from ${oldStatus} to ${newStatus}`);
   if (newStatus === 'running') {
-    duration.value = 0;
+    duration.value = 0; // Reset duration for the new run, first point will be at t=0
     timelineProgress.value = 0;
-    temperature.value = 25.0; // Reset temperature on start
-    console.log('[VisCard] Experiment starting. Configured duration:', currentConfigDuration.value, 's. Initializing chart data.');
+    // temperature.value = 25.0; // Temperature persists and increases from current value
 
-    // Initialize chart data for the running state
-    const initialData = generateHistoryGraphDataset(); // Generates 50 points
-    liveChartDataPoints.value = [...initialData];
-    liveChartLabels.value = Array.from({ length: initialData.length }, (_, i) => i + 1);
+    // Stop cooling if it was in progress
+    if (coolingIntervalId.value) {
+      clearInterval(coolingIntervalId.value);
+      coolingIntervalId.value = null;
+    }
+    isCooling.value = false;
+
+    liveChartDataPoints.value = [];
+    liveChartLabels.value = [];
 
     if (mainChart) {
-        mainChart.update(); // Ensure chart re-renders with new reactive data
+        mainChart.update(); // Update chart to show it's empty before first point
     }
+
+    // Plot the first data point immediately
+    updateChartData(); 
 
     let animationInterval = setInterval(() => {
       if (status.value !== 'running') { 
         clearInterval(animationInterval);
         return;
       }
-      updateChartData();
+      // Subsequent points will be plotted by the interval
+      // The first call to updateChartData already incremented duration, so next point is t=1
+      updateChartData(); 
     }, 1000);
     
-    // Use configured duration for the animation timeout
-    // Clear previous timeouts if any (safety measure)
     if (window.experimentEndTimeout) {
         clearTimeout(window.experimentEndTimeout);
     }
     window.experimentEndTimeout = setTimeout(() => {
       if (status.value === 'running') {
          clearInterval(animationInterval);
-         console.log('[VisCard] Experiment timer ended. Current status:', status.value, '. Setting to idle.');
-         
-         // Determine outcome based on the success rate passed during priming
-         // Remove toast logic - parent component will handle final feedback
-         /*
-         let outcomeMessage = "Expérience terminée.";
-         if (currentConfigSuccessRate.value >= 0.9) {
-             outcomeMessage = "Expérience terminée : Réussite !";
-             toast.success(outcomeMessage);
-         } else if (currentConfigSuccessRate.value < 0.1) {
-             outcomeMessage = "Expérience terminée : Échec (Crash) !";
-             toast.error(outcomeMessage);
-         } else {
-             outcomeMessage = "Expérience terminée : Partielle (Données corrompues).";
-             toast.warning(outcomeMessage);
-         }
-         */
-         
-         status.value = 'idle'; // Reset status to idle visually
+         status.value = 'idle';
       }
-    }, currentConfigDuration.value * 1000); 
-  } else {
-    // Reset timeline and potentially clear live data if desired when stopped/idle
+    }, currentConfigDuration.value * 1000);
+
+  } else { // Not running (idle, ready, error)
+    if (window.experimentEndTimeout) { 
+        clearTimeout(window.experimentEndTimeout);
+    }
+    
+    // Start cooling if not already cooling and temperature is above base
+    if (!isCooling.value && temperature.value > BASE_TEMPERATURE) {
+      isCooling.value = true;
+      // console.log("[VisCard] Starting cooldown...");
+      if (coolingIntervalId.value) clearInterval(coolingIntervalId.value); // Clear previous just in case
+      coolingIntervalId.value = setInterval(coolDownTemperature, COOLING_INTERVAL_MS);
+    }
+
+    // Clear chart data when not running
+    liveChartDataPoints.value = [];
+    liveChartLabels.value = [];
+    if (mainChart) {
+        mainChart.update();
+    }
     timelineProgress.value = 0; 
-    // liveChartLabels.value = []; // Optional: clear on stop/idle
-    // liveChartDataPoints.value = []; // Optional: clear on stop/idle
-    // mainChart?.update(); // Update if clearing data
   }
 });
+
+const coolDownTemperature = () => {
+  if (temperature.value > BASE_TEMPERATURE) {
+    temperature.value = parseFloat((temperature.value - COOLING_RATE).toFixed(1));
+
+    if (isOverheated.value && temperature.value < COOLDOWN_COMPLETE_THRESHOLD) {
+      isOverheated.value = false;
+      // console.log("[VisCard] System cooled down below threshold.");
+    }
+
+    if (temperature.value <= BASE_TEMPERATURE) {
+      temperature.value = BASE_TEMPERATURE;
+      if (coolingIntervalId.value) {
+        clearInterval(coolingIntervalId.value);
+        coolingIntervalId.value = null;
+      }
+      isCooling.value = false;
+      // console.log("[VisCard] Cooldown complete. Reached base temperature.");
+    }
+  } else {
+    // Should not happen if called correctly, but as a safeguard:
+    temperature.value = BASE_TEMPERATURE;
+    if (coolingIntervalId.value) {
+      clearInterval(coolingIntervalId.value);
+      coolingIntervalId.value = null;
+    }
+    isCooling.value = false;
+  }
+};
 
 // Exposer les méthodes pour le composant parent
 defineExpose({
   status, // Expose the status ref directly
+  isOverheated, // Expose overheat status
   setStatus: (newStatus) => {
+    // Potentially, the parent could check isOverheated before calling this
+    // or this component could refuse to start if overheated.
+    // For now, parent is responsible for checking isOverheated status.
     status.value = newStatus;
   },
   primeVisualization: (config) => {
@@ -379,21 +465,17 @@ defineExpose({
     currentConfigFrequency.value = config.frequency || 0;
     currentConfigDuration.value = config.duration || 30;
     currentConfigSuccessRate.value = config.successRate !== undefined ? config.successRate : 1.0;
-    currentConfigInputTxt.value = config.inputTxt || 'A'; // Store input character
-    console.log('[VisCard] primeVisualization called with config:', JSON.parse(JSON.stringify(config)));
-    stability.value = parseFloat((calculateFrequencyScore(currentConfigFrequency.value) * 100).toFixed(1));
-    temperature.value = 25.0; // Reset temp display on prime
+    currentConfigInputTxt.value = config.inputTxt || 'A';
     
-    // When priming, update the chart data if the chart exists,
-    // This prepares the visual even if it's hidden by the overlay.
-    if (mainChart) {
-      const primedData = generateHistoryGraphDataset();
-      liveChartDataPoints.value = [...primedData];
-      liveChartLabels.value = Array.from({ length: primedData.length }, (_, i) => i + 1);
-      
-      mainChart.update();
-    }
-    // Update expected signal chart as well
+    stability.value = parseFloat((calculateFrequencyScore(currentConfigFrequency.value) * 100).toFixed(1));
+    duration.value = 0; // Reset duration display here too for consistency before start
+    timelineProgress.value = 0;
+    
+    // Do NOT manipulate live chart data here. 
+    // The status watcher will handle clearing/populating the chart when status becomes 'running'.
+    // The overlay "Aucune donnée disponible" handles the view when idle/ready.
+
+    // Update expected signal chart as it's not live data dependent in the same way
     if (expectedSignalChart) {
         expectedSignalChart.data.datasets[0].data = generateExpectedSignalData(currentConfigInputTxt.value);
         expectedSignalChart.update();

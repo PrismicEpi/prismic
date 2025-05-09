@@ -161,7 +161,7 @@ const voltage = ref(1.7);
 const frequency = ref(50);
 const temperature = ref(25);
 const humidity = ref(50);
-const duration = ref(2);
+const duration = ref(5);
 const selectedPreset = ref('');
 
 // Watch for changes in the character input
@@ -238,14 +238,14 @@ const loadPreset = () => {
 
 // Sauvegarder la configuration
 const saveConfiguration = () => {
-  console.log('Configuration sauvegardée', {
-    character: character.value,
-    voltage: voltage.value,
-    frequency: frequency.value,
-    temperature: temperature.value,
-    humidity: humidity.value,
-    duration: duration.value
-  });
+  // console.log('Configuration sauvegardée', {
+  //   character: character.value,
+  //   voltage: voltage.value,
+  //   frequency: frequency.value,
+  //   temperature: temperature.value,
+  //   humidity: humidity.value,
+  //   duration: duration.value
+  // });
 };
 
 // Exposer les méthodes et propriétés pour le composant parent
